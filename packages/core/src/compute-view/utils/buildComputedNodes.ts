@@ -47,7 +47,7 @@ export function elementModelToNodeSource<A extends AnyAux>(el: ElementModel<A>):
     id,
     title,
     ...rest
-  } = omit(el.$element, ['summary', 'description', 'metadata', 'style', 'tags'])
+  } = omit(el.$element, ['summary', 'description', 'metadata', 'style', 'tags', 'vulnerabilities', 'threats'])
   const { color, icon, shape, ...style } = el.style
   return exact({
     id: id as scalar.NodeId,

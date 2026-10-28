@@ -1,5 +1,5 @@
 import { isEmpty, isEmptyish, isShallowEqual } from 'remeda'
-import type { Any, Color, IteratorLike, Link, RelationshipArrowType, scalar } from '../types'
+import type { Any, Color, IteratorLike, Link, RelationshipArrowType, scalar, Threat, Vulnerability } from '../types'
 import {
   type Relationship,
   type RelationshipLineType,
@@ -138,6 +138,27 @@ export class RelationshipModel<A extends Any = Any>
 
   get links(): ReadonlyArray<Link> {
     return this.$relationship.links ?? []
+  }
+
+  /**
+   * Known vulnerabilities of the relationship (e.g. insecure protocol)
+   */
+  get vulnerabilities(): ReadonlyArray<Vulnerability> {
+    return this.$relationship.vulnerabilities ?? []
+  }
+
+  /**
+   * Threats of the relationship (STRIDE threat modelling of data flows)
+   */
+  get threats(): ReadonlyArray<Threat> {
+    return this.$relationship.threats ?? []
+  }
+
+  /**
+   * Returns true if the relationship has vulnerabilities or threats
+   */
+  hasSecurity(): boolean {
+    return this.vulnerabilities.length > 0 || this.threats.length > 0
   }
 
   get color(): Color {

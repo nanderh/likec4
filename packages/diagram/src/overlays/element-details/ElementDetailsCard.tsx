@@ -57,9 +57,10 @@ import type { OnNavigateTo } from '../../LikeC4Diagram.props'
 import { stopPropagation } from '../../utils'
 import * as styles from './ElementDetailsCard.css'
 import { MetadataProvider, MetadataValue } from './MetadataValue'
-import type { DetailsSubject } from './subject'
+import { type DetailsSubject, DEPLOYMENT_DETAILS_TAB_KEY, ELEMENT_DETAILS_TAB_KEY } from './subject'
 import { TabPanelDeployments } from './TabPanelDeployments'
 import { TabPanelRelationships } from './TabPanelRelationships'
+import { TabPanelThreats, TabPanelVulnerabilities } from './TabPanelSecurity'
 import { TabPanelStructure } from './TabPanelStructure'
 
 const Divider = MantineDivider.withProps({
@@ -115,8 +116,9 @@ type ElementDetailsCardProps = {
 const MIN_PADDING = 24
 
 const TABS = ['Properties', 'Relationships', 'Views', 'Structure', 'Deployments'] as const
+const SECURITY_TABS = ['Vulnerabilities', 'Threats'] as const
 const DEPLOYMENT_TABS = ['Properties', 'Views', 'Structure'] as const
-type TabName = typeof TABS[number]
+type TabName = typeof TABS[number] | typeof SECURITY_TABS[number]
 
 export function ElementDetailsCard({
   viewId,
@@ -131,7 +133,7 @@ export function ElementDetailsCard({
     windowHeight = windowSize.height || window.innerHeight || 800
 
   const [activeTab, setActiveTab] = useSessionStorage<TabName>({
-    key: subject.deployment ? 'likec4:deployment-details:active-tab' : 'likec4:element-details:active-tab',
+    key: subject.deployment ? DEPLOYMENT_DETAILS_TAB_KEY : ELEMENT_DETAILS_TAB_KEY,
     defaultValue: 'Properties',
   })
   const diagram = useDiagram()
@@ -147,7 +149,16 @@ export function ElementDetailsCard({
     ? viewModel.$model.deployment.element(subject.deployment)
     : null
   const elementModel = nonNullable(logicalElement ?? deploymentElement, 'Details subject not found')
-  const tabs = subject.deployment ? DEPLOYMENT_TABS : TABS
+  // Deployed instance shows vulnerabilities and threats of its logical element
+  const securityElement = logicalElement ?? (deploymentElement?.isInstance() ? deploymentElement.element : null)
+  // Security tabs are shown only if the model has vulnerabilities or threats
+  const showSecurity = !!securityElement && viewModel.$model.hasSecurity()
+  const baseTabs = subject.deployment ? DEPLOYMENT_TABS : TABS
+  const tabs: ReadonlyArray<TabName> = showSecurity ? [...baseTabs, ...SECURITY_TABS] : baseTabs
+  const securityCounts = {
+    Vulnerabilities: securityElement?.vulnerabilities.length ?? 0,
+    Threats: securityElement?.threats.length ?? 0,
+  }
   const hasSummary = logicalElement
     ? logicalElement.hasSummary
     : !elementModel.summary.isEmpty && elementModel.summary.text !== elementModel.description.text
@@ -446,7 +457,16 @@ export function ElementDetailsCard({
               classNames={styles.tabs()}>
               <TabsList>
                 {tabs.map(tab => (
-                  <TabsTab key={tab} value={tab}>
+                  <TabsTab
+                    key={tab}
+                    value={tab}
+                    {...((tab === 'Vulnerabilities' || tab === 'Threats') && securityCounts[tab] > 0 && {
+                      rightSection: (
+                        <Badge size="xs" radius="sm" variant="light" color="gray" px={4}>
+                          {securityCounts[tab]}
+                        </Badge>
+                      ),
+                    })}>
                     {tab}
                   </TabsTab>
                 ))}
@@ -557,6 +577,22 @@ export function ElementDetailsCard({
                 <TabsPanel value="Deployments">
                   <ScrollArea scrollbars="y" type="auto">
                     <TabPanelDeployments elementFqn={logicalElement.id} />
+                  </ScrollArea>
+                </TabsPanel>
+              )}
+
+              {securityElement && showSecurity && (
+                <TabsPanel value="Vulnerabilities">
+                  <ScrollArea scrollbars="y" type="auto">
+                    <TabPanelVulnerabilities element={securityElement} />
+                  </ScrollArea>
+                </TabsPanel>
+              )}
+
+              {securityElement && showSecurity && (
+                <TabsPanel value="Threats">
+                  <ScrollArea scrollbars="y" type="auto">
+                    <TabPanelThreats element={securityElement} />
                   </ScrollArea>
                 </TabsPanel>
               )}

@@ -37,6 +37,7 @@ import {
   opacityPropertyRuleChecks,
 } from './property-checks'
 import { checkRelationBody, extendRelationChecks, relationChecks } from './relation'
+import { checkSecurityItemAttribute, checkSecurityProperty } from './security'
 import {
   checkDeploymentNodeKind,
   checkElementKind,
@@ -93,6 +94,8 @@ export const isValidatableAstNode = isAnyOf(
   ast.isDynamicViewDisplayVariantProperty,
   ast.isMetadataBody,
   ast.isMetadataProperty,
+  ast.isSecurityProperty,
+  ast.isSecurityItemProperty,
   ast.isRelation,
   ast.isRelationBody,
   ast.isElementProperty,
@@ -190,6 +193,9 @@ export function registerValidationChecks(services: LikeC4Services) {
     ElementKind: checkElementKind(services),
     Relation: relationChecks(services),
     RelationBody: checkRelationBody(services),
+    ThreatProperty: checkSecurityProperty(services),
+    VulnerabilityProperty: checkSecurityProperty(services),
+    SecurityItemAttribute: checkSecurityItemAttribute(services),
     Tag: checkTag(services),
     FqnExprWith: checkFqnExprWith(services),
     RelationExprWith: checkRelationExprWith(services),

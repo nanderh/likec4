@@ -153,6 +153,8 @@ export class MergedSpecification {
     technology,
     summary,
     metadata,
+    vulnerabilities,
+    threats,
   }: ParsedAstElement): c4.Element | null => {
     try {
       const __kind = this.specs.elements[kind]
@@ -192,6 +194,8 @@ export class MergedSpecification {
         notation: __kind.notation,
         style: mergedStyle,
         links,
+        vulnerabilities,
+        threats,
         tags,
         summary,
         technology,

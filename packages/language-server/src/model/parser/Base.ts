@@ -47,6 +47,7 @@ import { projectIdFrom } from '../../utils'
 import { readStrictFqn } from '../../utils/elementRef'
 import { type IsInvalidFn, type IsValidFn, checksFromDiagnostics } from '../../validation'
 import type { Project } from '../../workspace/ProjectsManager'
+import { readSecurityAttribute, securityAttributesOf } from './security'
 
 const logger = serverLogger.getChild('parser')
 
@@ -544,6 +545,78 @@ export class BaseParser {
     return isNonEmptyArray(links) ? links : undefined
   }
 
+  /**
+   * Parses vulnerabilities and threats from the body of an element or a relation.
+   * Items with the same id are deduplicated, first wins.
+   */
+  parseSecurity(source?: { props: ReadonlyArray<AstNode> }): {
+    vulnerabilities?: c4.NonEmptyArray<c4.Vulnerability>
+    threats?: c4.NonEmptyArray<c4.Threat>
+  } {
+    if (!source?.props || source.props.length === 0) {
+      return {}
+    }
+    const vulnerabilities = [] as c4.Vulnerability[]
+    const threats = [] as c4.Threat[]
+    const isValid = this.isValid
+    for (const item of source.props) {
+      if (!ast.isSecurityProperty(item) || !isValid(item) || isEmptyish(item.id)) {
+        continue
+      }
+      const isThreat = ast.isThreatProperty(item)
+      const target = isThreat ? threats : vulnerabilities
+      if (target.some(i => i.id === item.id)) {
+        continue
+      }
+      try {
+        const props = item.body?.props.filter(p => isValid(p)) ?? []
+        const spec = securityAttributesOf(item)
+        const attributes = {} as Record<string, unknown>
+        for (const attr of props.filter(ast.isSecurityItemAttribute)) {
+          const attrSpec = spec[attr.key]
+          if (!attrSpec || attr.key in attributes) {
+            continue
+          }
+          const { value } = readSecurityAttribute(attrSpec, attr)
+          if (value !== undefined) {
+            attributes[attr.key] = value
+          }
+        }
+        const strings = pipe(
+          props,
+          filter(ast.isSecurityItemStringProperty),
+          groupBy(p => p.key),
+          mapValues(ps => ps[0].value),
+        )
+        const bodyTitle = strings.title ? toSingleLine(strings.title) : undefined
+        const common = {
+          id: item.id,
+          title: item.title ?? bodyTitle?.md ?? bodyTitle?.txt,
+          description: this.parseMarkdownOrString(strings.description),
+          links: item.body ? this.parseLinks(item.body) : undefined,
+        }
+        if (isThreat) {
+          threats.push(exact({
+            ...common,
+            ...attributes,
+            stride: (attributes['stride'] as c4.StrideCategory[] | undefined) ?? [],
+          }) as c4.Threat)
+        } else {
+          vulnerabilities.push(exact({
+            ...common,
+            ...attributes,
+          }) as c4.Vulnerability)
+        }
+      } catch (e) {
+        this.logError(e, item, 'base')
+      }
+    }
+    return exact({
+      vulnerabilities: isNonEmptyArray(vulnerabilities) ? vulnerabilities : undefined,
+      threats: isNonEmptyArray(threats) ? threats : undefined,
+    })
+  }
+
   parseIconProperty(prop: ast.IconProperty | undefined): c4.IconUrl | undefined {
     if (!prop || !this.isValid(prop)) {
       return undefined
@@ -630,7 +703,7 @@ export class BaseParser {
   }
 
   parseElementStyle(
-    elementProps: Array<ast.ElementProperty> | ast.ElementStyleProperty | undefined,
+    elementProps: ReadonlyArray<ast.ElementProperty | ast.SecurityProperty> | ast.ElementStyleProperty | undefined,
   ): ParsedElementStyle {
     if (!elementProps) {
       return {} as ParsedElementStyle

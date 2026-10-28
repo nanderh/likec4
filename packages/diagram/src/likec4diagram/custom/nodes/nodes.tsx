@@ -30,6 +30,7 @@ import { CompoundActions } from './CompoundActions'
 import { DeploymentElementActions, ElementActions } from './ElementActions'
 import { NodeDrifts } from './NodeDrifts'
 import { NodeNotes } from './NodeNotes'
+import { NodeSecurity } from './NodeSecurity'
 import { CompoundDeploymentToolbar, CompoundElementToolbar } from './toolbar/CompoundToolbar'
 import { DeploymentElementToolbar, ElementToolbar } from './toolbar/ElementToolbar'
 
@@ -107,6 +108,7 @@ export function ElementNode(props: Types.NodeProps<'element'>) {
       <ElementShape {...props} />
       <ElementData {...props} aria-hidden />
       {enableElementTags && <ElementTags {...props} />}
+      <NodeSecurity {...props} />
       <ElementActions {...props} />
       {enableElementDetails && <ElementDetailsButtonWithHandler {...props} />}
       {!enableReadOnly && <ElementToolbar {...props} />}
@@ -125,6 +127,7 @@ export function DeploymentNode(props: Types.NodeProps<'deployment'>) {
       <ElementShape {...props} />
       <ElementData {...props} aria-hidden />
       {enableElementTags && <ElementTags {...props} />}
+      <NodeSecurity {...props} />
       <DeploymentElementActions {...props} />
       {enableElementDetails && <ElementDetailsButtonWithHandler {...props} />}
       {!enableReadOnly && <DeploymentElementToolbar {...props} />}

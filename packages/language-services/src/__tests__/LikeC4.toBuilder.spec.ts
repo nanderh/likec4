@@ -252,6 +252,54 @@ describe('LikeC4.toBuilder / toDSL / writeDSL', () => {
     expect(reloadedModel.view('index').id).toBe('index')
   })
 
+  it('round-trips vulnerabilities and threats through toDSL()', async () => {
+    const likec4 = await fromSource(`
+      specification {
+        element system
+      }
+      model {
+        gw = system 'Gateway' {
+          vulnerability CVE-2024-3094 'xz backdoor' {
+            severity critical
+            cvss 10.0
+            cwe CWE-506
+            status open
+            description '''
+              Malicious code in **xz**
+            '''
+            link https://nvd.nist.gov/vuln/detail/CVE-2024-3094
+          }
+          threat T-1 'Spoofed device' {
+            stride spoofing, tampering
+            likelihood medium
+            impact high
+            mitigation 'Mutual TLS'
+          }
+        }
+        pki = system
+        gw -> pki 'requests certificate' {
+          threat T-2 {
+            stride information-disclosure
+            risk low
+            status accepted
+          }
+        }
+      }
+    `)
+    const original = await likec4.parsedModel()
+    const dsl = await likec4.toDSL()
+
+    const reloaded = await fromSource(dsl, { throwIfInvalid: true })
+    const reloadedModel = await reloaded.parsedModel()
+
+    expect(reloadedModel.element('gw').vulnerabilities).toEqual(original.element('gw').vulnerabilities)
+    expect(reloadedModel.element('gw').threats).toEqual(original.element('gw').threats)
+    const [rel] = [...reloadedModel.relationships()]
+    expect(rel!.threats).toEqual([
+      { id: 'T-2', stride: ['information-disclosure'], risk: 'low', status: 'accepted' },
+    ])
+  })
+
   describe('writeDSL', () => {
     beforeEach(() => {
       vol.reset()

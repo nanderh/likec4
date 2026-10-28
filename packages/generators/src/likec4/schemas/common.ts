@@ -26,6 +26,10 @@ import {
   type TextSize,
   type ThemeColor,
   exact,
+  RiskLevels,
+  SecuritySeverities,
+  SecurityStatuses,
+  StrideCategories,
 } from '@likec4/core/types'
 import { isNonNullish, pickBy } from 'remeda'
 import * as z from 'zod/v4'
@@ -191,6 +195,39 @@ export const metadataValue: ZMetadataValue = z.union([z.string(), z.boolean(), z
 export interface ZMetadata extends z.ZodType<Record<string, MetadataValue | MetadataValue[]>> {}
 export const metadata: ZMetadata = z.record(z.string(), metadataValue.or(z.array(metadataValue)))
 
+const securityItemId = z
+  .string()
+  .regex(/^([a-zA-Z]|_+[a-zA-Z0-9])[-\w]*$/, 'Must start with a letter and contain only letters, digits, - and _')
+
+const securityItemProps = {
+  id: securityItemId,
+  title: z.string().nullish(),
+  status: z.enum(SecurityStatuses).nullish(),
+  description: markdownOrString.nullish(),
+  mitigation: markdownOrString.nullish(),
+  links: links.nullish(),
+}
+
+export const vulnerability = z
+  .object({
+    ...securityItemProps,
+    severity: z.enum(SecuritySeverities).nullish(),
+    cvss: z.number().min(0).max(10).nullish(),
+    vector: z.string().nullish(),
+    cwe: z.string().nullish(),
+  })
+  .transform(pickBy(isNonNullish))
+
+export const threat = z
+  .object({
+    ...securityItemProps,
+    stride: z.array(z.enum(StrideCategories)).readonly().default([]),
+    likelihood: z.enum(RiskLevels).nullish(),
+    impact: z.enum(RiskLevels).nullish(),
+    risk: z.enum(RiskLevels).nullish(),
+  })
+  .transform(pickBy(isNonNullish))
+
 export const props = z
   .object({
     tags: tags.nullish(),
@@ -201,4 +238,6 @@ export const props = z
     technology: z.string().nullish(),
     links: links.nullish(),
     metadata: metadata.nullish(),
+    vulnerabilities: z.array(vulnerability).readonly().nullish(),
+    threats: z.array(threat).readonly().nullish(),
   })

@@ -39,6 +39,7 @@ import { clamp, entries, filter, isEmpty, isTruthy, map, partition, pipe } from 
 import { Markdown } from '../../base-primitives'
 import { Link } from '../../components/Link'
 import { PortalToContainer } from '../../components/PortalToContainer'
+import { SecurityCompactList } from '../../components/security'
 import { useRootContainerRef } from '../../context'
 import { useEnabledFeatures } from '../../context/DiagramFeatures'
 import { selectDiagramContext, useDiagram, useDiagramSelector, useOnDiagramEvent } from '../../hooks/useDiagram'
@@ -614,6 +615,12 @@ const Relationship = forwardRef<
           <HStack gap="1" flexWrap={'wrap'}>
             {links.map((link) => <Link key={link.url} size="sm" value={link} />)}
           </HStack>
+        </>
+      )}
+      {r.isModelRelation() && r.hasSecurity() && (
+        <>
+          <Label>threats & vulnerabilities</Label>
+          <SecurityCompactList threats={r.threats} vulnerabilities={r.vulnerabilities} />
         </>
       )}
     </VStack>

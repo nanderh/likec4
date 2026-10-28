@@ -1,0 +1,123 @@
+---
+title: Threats and vulnerabilities
+description: Document known vulnerabilities and STRIDE threats of elements and relationships
+sidebar:
+  label: Threats & vulnerabilities
+  order: 11
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Elements and relationships can carry known **vulnerabilities** (CVEs, pentest findings) and
+**threats** from [STRIDE](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats) threat modelling.
+They are displayed in the element details (_Vulnerabilities_ and _Threats_ tabs),
+in the relationship popover, and as a badge on diagram nodes with unresolved items.
+
+## Vulnerabilities
+
+```likec4
+model {
+  gateway = system 'Gateway' {
+    vulnerability CVE-2024-3094 'xz/liblzma backdoor' {
+      severity critical
+      cvss 10.0
+      vector 'CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H'
+      cwe CWE-506
+      status open
+      description 'Malicious code in upstream tarballs'
+      mitigation 'Pin xz to 5.4.6'
+      link https://www.openwall.com/lists/oss-security/2024/03/29/4
+    }
+  }
+}
+```
+
+| Property      | Values                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `severity`    | `critical`, `high`, `medium`, `low`, `info` (derived from `cvss` if omitted)            |
+| `cvss`        | CVSS base score, `0.0` - `10.0`                                                         |
+| `vector`      | CVSS vector string                                                                      |
+| `cwe`         | Weakness id, e.g. `CWE-79`                                                              |
+| `status`      | `open`, `in-progress`, `mitigated`, `accepted`, `transferred`, `resolved`, `false-positive` |
+| `title`, `description`, `mitigation` | text or markdown                                                 |
+| `link`        | one or more links                                                                       |
+
+Identifiers like `CVE-...`, `GHSA-...` and `CWE-...` link to NVD, GitHub advisories and MITRE automatically,
+unless the vulnerability has its own links.
+
+## Threats
+
+```likec4
+model {
+  gateway = system 'Gateway' {
+    keyStore = store 'Key Store' {
+      threat KS-T1 'Extraction of device private keys' {
+        stride information-disclosure, spoofing
+        likelihood low
+        impact critical
+        status mitigated
+        mitigation '''
+          Keys never leave the **TEE**
+        '''
+      }
+    }
+  }
+}
+```
+
+| Property                | Values                                                                  |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `stride`                | one or more of `spoofing`, `tampering`, `repudiation`, `information-disclosure`, `denial-of-service`, `elevation-of-privilege`, or the letters `S`, `T`, `R`, `I`, `D`, `E` |
+| `likelihood`, `impact`  | `low`, `medium`, `high`, `critical`                                     |
+| `risk`                  | `low`, `medium`, `high`, `critical` (derived from likelihood × impact if omitted) |
+| `status`                | same as for vulnerabilities                                             |
+| `title`, `description`, `mitigation` | text or markdown                                           |
+| `link`                  | one or more links                                                       |
+
+Threats and vulnerabilities without `status` are considered `open`.
+
+### Data flows
+
+STRIDE-per-interaction threats are defined on relationships:
+
+```likec4
+model {
+  gateway -> pki 'CMP' {
+    threat DF-T2 'Denial of service on CMP endpoint' {
+      stride D
+      risk medium
+    }
+  }
+}
+```
+
+The _Threats_ tab of an element lists its own threats and the threats of its direct relationships,
+with a STRIDE summary on top.
+
+## Separate threat model
+
+Use [`extend`](/dsl/extend/) to keep the threat model in separate files, next to the architecture:
+
+```likec4
+// threats.c4
+model {
+  extend gateway.keyStore {
+    threat KS-T2 'Unauthorised PKCS#11 operations' {
+      stride elevation-of-privilege
+      likelihood medium
+      impact high
+    }
+  }
+
+  extend gateway -> pki 'CMP' {
+    threat DF-T3 'Replay of CMP messages' {
+      stride tampering, repudiation
+    }
+  }
+}
+```
+
+<Aside type='note'>
+Identifiers must be unique per element or relationship.
+If the same identifier is defined again in an `extend`, the first definition wins.
+</Aside>

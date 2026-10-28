@@ -8,11 +8,29 @@ import type {
   ParsedAstExtend,
 } from '../../ast'
 
+/**
+ * Merges vulnerabilities or threats, deduplicated by id (first wins)
+ */
+export function mergeSecurityItems<T extends { readonly id: string }>(
+  existing: ReadonlyArray<T> | null | undefined,
+  incoming: ReadonlyArray<T> | null | undefined,
+): T[] {
+  const result = existing ? [...existing] : []
+  for (const item of incoming ?? []) {
+    if (!result.some(i => i.id === item.id)) {
+      result.push(item)
+    }
+  }
+  return result
+}
+
 export class MergedExtends {
   private mergedData = new Map<string, {
     links: c4.Link[]
     tags: c4.Tag[]
     metadata: Record<string, string | string[]>
+    vulnerabilities: c4.Vulnerability[]
+    threats: c4.Threat[]
   }>()
 
   private mergeMetadata(
@@ -44,12 +62,16 @@ export class MergedExtends {
 
   merge(parsedExtends: ParsedAstExtend[]): void {
     for (const parsedExtend of parsedExtends) {
-      const { id, links, tags, metadata } = parsedExtend
+      const { id, links, tags, metadata, vulnerabilities, threats } = parsedExtend
       const existing = this.mergedData.get(id) ?? {
         links: [],
         tags: [],
         metadata: {},
+        vulnerabilities: [],
+        threats: [],
       }
+      existing.vulnerabilities = mergeSecurityItems(existing.vulnerabilities, vulnerabilities)
+      existing.threats = mergeSecurityItems(existing.threats, threats)
       if (links) {
         existing.links.push(...links)
       }
@@ -72,6 +94,8 @@ export class MergedExtends {
       tags?: readonly string[] | null
       links?: readonly c4.Link[] | null
       metadata?: Record<string, string | string[]>
+      vulnerabilities?: readonly c4.Vulnerability[] | null
+      threats?: readonly c4.Threat[] | null
     },
   >(el: E): E {
     const extendData = this.mergedData.get(el.id)
@@ -100,11 +124,16 @@ export class MergedExtends {
       metadata = this.mergeMetadata(el.metadata, extendData.metadata)
     }
 
+    const vulnerabilities = mergeSecurityItems(el.vulnerabilities, extendData.vulnerabilities)
+    const threats = mergeSecurityItems(el.threats, extendData.threats)
+
     return {
       ...el,
       tags: hasAtLeast(tags, 1) ? tags : null,
       links: hasAtLeast(links, 1) ? links : null,
       ...(!isEmpty(metadata) && { metadata }),
+      ...(hasAtLeast(vulnerabilities, 1) && { vulnerabilities }),
+      ...(hasAtLeast(threats, 1) && { threats }),
     }
   }
 }

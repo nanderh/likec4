@@ -174,6 +174,7 @@ describe('LikeC4CompletionProvider', () => {
         'title',
         'technology',
         'this',
+        'threat',
         // target,try and top are reserved keywords and suggested as id new element
         'target',
         'try',

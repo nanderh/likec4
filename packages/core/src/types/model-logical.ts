@@ -16,6 +16,7 @@ import type {
 import type * as aux from './_aux'
 import type { AnyAux } from './_aux'
 import type { FqnRef } from './fqnRef'
+import type { WithSecurity } from './model-security'
 import type * as scalar from './scalar'
 
 export interface ElementStyle {
@@ -89,7 +90,8 @@ export interface Element<A extends AnyAux = AnyAux>
     aux.WithOptionalTags<A>,
     aux.WithOptionalLinks,
     aux.WithMetadata<A>,
-    aux.WithNotation
+    aux.WithNotation,
+    WithSecurity
 {
   readonly id: aux.StrictFqn<A>
   readonly kind: aux.ElementKind<A>
@@ -107,7 +109,8 @@ export interface AbstractRelationship<A extends AnyAux>
     aux.WithDescriptionAndTech,
     aux.WithOptionalTags<A>,
     aux.WithOptionalLinks,
-    aux.WithMetadata<A>
+    aux.WithMetadata<A>,
+    WithSecurity
 {
   readonly id: scalar.RelationId
   readonly title?: string | null

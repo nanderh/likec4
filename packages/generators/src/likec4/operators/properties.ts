@@ -1,6 +1,7 @@
 import { type Color, type ElementStyle, type Link, type MarkdownOrString, exact } from '@likec4/core/types'
-import { entries, isArray, isNot, isString, piped } from 'remeda'
+import { entries, isArray, isEmptyish, isNot, isString, piped } from 'remeda'
 import type { ConditionalKeys } from 'type-fest'
+import type * as z from 'zod/v4'
 import * as common from '../schemas/common'
 import type { Op } from './base'
 import {
@@ -18,6 +19,7 @@ import {
   separateNewLine,
   spaceBetween,
   text,
+  when,
   zodOp,
 } from './base'
 
@@ -184,6 +186,79 @@ export const linksProperty = <
     'links',
     foreachNewLine(
       linkProperty(),
+    ),
+  )
+
+type VulnerabilityData = z.output<typeof common.vulnerability>
+type ThreatData = z.output<typeof common.threat>
+
+function hasSecurityItemBody(item: VulnerabilityData | ThreatData): boolean {
+  const { id: _id, title: _title, ...rest } = item
+  return !isEmptyish(rest) && !('stride' in rest && Object.keys(rest).length === 1 && rest.stride.length === 0)
+}
+
+export function vulnerabilityItem(): Op<VulnerabilityData> {
+  return spaceBetween(
+    print('vulnerability'),
+    print(v => v.id),
+    property('title', inlineText()),
+    when(
+      hasSecurityItemBody,
+      body(
+        property('severity'),
+        property('cvss'),
+        textProperty('vector'),
+        textProperty('cwe'),
+        property('status'),
+        descriptionProperty(),
+        markdownProperty('mitigation'),
+        linksProperty(),
+      ),
+    ),
+  )
+}
+
+export function threatItem(): Op<ThreatData> {
+  return spaceBetween(
+    print('threat'),
+    print(t => t.id),
+    property('title', inlineText()),
+    when(
+      hasSecurityItemBody,
+      body(
+        when(
+          t => t.stride.length > 0,
+          print(t => `stride ${t.stride.join(', ')}`),
+        ),
+        property('likelihood'),
+        property('impact'),
+        property('risk'),
+        property('status'),
+        descriptionProperty(),
+        markdownProperty('mitigation'),
+        linksProperty(),
+      ),
+    ),
+  )
+}
+
+export const vulnerabilitiesProperty = <
+  A extends { vulnerabilities?: ReadonlyArray<VulnerabilityData> | null | undefined },
+>(): Op<A> =>
+  select(
+    e => e.vulnerabilities,
+    foreachNewLine(
+      vulnerabilityItem(),
+    ),
+  )
+
+export const threatsProperty = <
+  A extends { threats?: ReadonlyArray<ThreatData> | null | undefined },
+>(): Op<A> =>
+  select(
+    e => e.threats,
+    foreachNewLine(
+      threatItem(),
     ),
   )
 

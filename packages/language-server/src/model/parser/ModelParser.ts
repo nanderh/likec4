@@ -129,6 +129,7 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
         metadata,
         tags: tags ?? undefined,
         links: this.parseLinks(astNode.body),
+        ...this.parseSecurity(astNode.body),
         ...descAndTech,
         style,
       })
@@ -138,8 +139,9 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
       const tags = this.parseTags(astNode.body)
       const metadata = this.getMetadata(astNode.body?.props.find(ast.isMetadataProperty))
       const links = this.parseLinks(astNode.body)
+      const security = this.parseSecurity(astNode.body)
 
-      if (!tags && isEmptyish(metadata) && !links) {
+      if (!tags && isEmptyish(metadata) && !links && isEmpty(security)) {
         return null
       }
 
@@ -152,6 +154,7 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
         metadata,
         tags,
         links,
+        ...security,
       })
     }
 
@@ -165,8 +168,9 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
       const metadata = this.getMetadata(astNode.body?.props.find(ast.isMetadataProperty))
       const astPath = this.getAstNodePath(astNode)
       const links = this.parseLinks(astNode.body)
+      const security = this.parseSecurity(astNode.body)
 
-      if (!tags && isEmpty(metadata ?? {}) && !links) {
+      if (!tags && isEmpty(metadata ?? {}) && !links && isEmpty(security)) {
         return null
       }
 
@@ -192,6 +196,7 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
         metadata,
         tags,
         links,
+        ...security,
       })
     }
 
@@ -268,6 +273,7 @@ export function ModelParser<TBase extends WithExpressionV2>(B: TBase) {
         kind,
         tags,
         links,
+        ...this.parseSecurity(astNode.body),
         navigateTo,
         description,
         technology,

@@ -16,3 +16,13 @@ export function detailsSubject(
   }
   return data.modelFqn ? { type: 'element', element: data.modelFqn } : null
 }
+
+/**
+ * Session storage key of the active tab in element details
+ */
+export const ELEMENT_DETAILS_TAB_KEY = 'likec4:element-details:active-tab'
+
+/**
+ * Session storage key of the active tab in deployment element details
+ */
+export const DEPLOYMENT_DETAILS_TAB_KEY = 'likec4:deployment-details:active-tab'

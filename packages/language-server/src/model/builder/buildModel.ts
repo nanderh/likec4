@@ -49,7 +49,7 @@ import type { LikeC4Services } from '../../module'
 import type { Project } from '../../workspace/ProjectsManager'
 import { relationFingerprint } from '../relationFingerprint'
 import { buildDiffs } from './buildDiffs'
-import { MergedExtends } from './MergedExtends'
+import { MergedExtends, mergeSecurityItems } from './MergedExtends'
 import { MergedSpecification } from './MergedSpecification'
 
 export type BuildModelData = {
@@ -157,8 +157,12 @@ export function buildModelData(
       const tags = rel.tags ? [...rel.tags] : []
       const links = rel.links ? [...rel.links] : []
       let metadata = rel.metadata ? { ...rel.metadata } : {}
+      let vulnerabilities = rel.vulnerabilities ? [...rel.vulnerabilities] : []
+      let threats = rel.threats ? [...rel.threats] : []
 
       for (const ext of relExtends) {
+        vulnerabilities = mergeSecurityItems(vulnerabilities, ext.vulnerabilities)
+        threats = mergeSecurityItems(threats, ext.threats)
         if (ext.tags) {
           tags.push(...ext.tags)
         }
@@ -198,6 +202,8 @@ export function buildModelData(
         ...(hasAtLeast(uniqueTags, 1) && { tags: uniqueTags }),
         ...(hasAtLeast(uniqueLinks, 1) && { links: uniqueLinks }),
         ...(!isEmpty(metadata) && { metadata }),
+        ...(hasAtLeast(vulnerabilities, 1) && { vulnerabilities }),
+        ...(hasAtLeast(threats, 1) && { threats }),
       }
     }),
     forEach(scanMetadataKeys),

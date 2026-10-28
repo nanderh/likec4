@@ -29,6 +29,8 @@ import {
   summaryProperty,
   tagsProperty,
   technologyProperty,
+  threatsProperty,
+  vulnerabilitiesProperty,
 } from './properties'
 
 // --- Tree building ---
@@ -84,6 +86,8 @@ function hasElementProps(el: ElementData): boolean {
     || (el.tags && el.tags.length > 0)
     || (el.links && el.links.length > 0)
     || !isEmptyish(el.metadata)
+    || (el.vulnerabilities && el.vulnerabilities.length > 0)
+    || (el.threats && el.threats.length > 0)
     || hasStyleProps(el)
   )
 }
@@ -98,6 +102,8 @@ const elementProperties = zodOp(schemas.model.element)(
     descriptionProperty(),
     linksProperty(),
     metadataProperty(),
+    vulnerabilitiesProperty(),
+    threatsProperty(),
     select(
       e => hasStyleProps(e) ? e.style : undefined,
       body('style')(
@@ -155,6 +161,8 @@ function hasRelationProps(rel: schemas.model.relationship.Data): boolean {
     || (rel.tags && rel.tags.length > 0)
     || (rel.links && rel.links.length > 0)
     || !isEmptyish(rel.metadata)
+    || (rel.vulnerabilities && rel.vulnerabilities.length > 0)
+    || (rel.threats && rel.threats.length > 0)
     || hasRelationStyle(rel)
     || rel.navigateTo
   )
@@ -179,6 +187,8 @@ export const relationship = zodOp(schemas.model.relationship)(
         property('navigateTo'),
         linksProperty(),
         metadataProperty(),
+        vulnerabilitiesProperty(),
+        threatsProperty(),
         when(
           hasRelationStyle,
           body('style')(

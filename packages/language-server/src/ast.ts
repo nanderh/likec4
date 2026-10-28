@@ -120,6 +120,8 @@ export interface ParsedAstElement {
   links?: c4.NonEmptyArray<c4.Link>
   style: ParsedElementStyle
   metadata?: { [key: string]: string | string[] }
+  vulnerabilities?: c4.NonEmptyArray<c4.Vulnerability>
+  threats?: c4.NonEmptyArray<c4.Threat>
 }
 
 export interface ParsedAstExtend {
@@ -128,6 +130,8 @@ export interface ParsedAstExtend {
   tags?: c4.NonEmptyArray<c4.Tag> | null
   links?: c4.NonEmptyArray<c4.Link> | null
   metadata?: { [key: string]: string | string[] }
+  vulnerabilities?: c4.NonEmptyArray<c4.Vulnerability>
+  threats?: c4.NonEmptyArray<c4.Threat>
 }
 
 export interface ParsedAstExtendRelation {
@@ -137,6 +141,8 @@ export interface ParsedAstExtendRelation {
   tags?: c4.NonEmptyArray<c4.Tag> | null
   links?: c4.NonEmptyArray<c4.Link> | null
   metadata?: { [key: string]: string | string[] }
+  vulnerabilities?: c4.NonEmptyArray<c4.Vulnerability>
+  threats?: c4.NonEmptyArray<c4.Threat>
 }
 
 export interface ParsedAstRelation {
@@ -158,6 +164,8 @@ export interface ParsedAstRelation {
   links?: c4.NonEmptyArray<c4.Link>
   navigateTo?: c4.ViewId
   metadata?: { [key: string]: string | string[] }
+  vulnerabilities?: c4.NonEmptyArray<c4.Vulnerability>
+  threats?: c4.NonEmptyArray<c4.Threat>
 }
 
 // Alias for easier refactoring

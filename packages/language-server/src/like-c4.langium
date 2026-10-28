@@ -151,7 +151,7 @@ Element:
 ElementBody:
   '{'
   tags=Tags?
-  props+=ElementProperty*
+  props+=(ElementProperty | SecurityProperty)*
   elements+=(
     Relation<false> |
     Element
@@ -187,7 +187,7 @@ ExtendElementOrRelation:
 ExtendElementBody:
   '{'
   tags=Tags?
-  props+=ExtendElementProperty*
+  props+=(ExtendElementProperty | SecurityProperty)*
 
   elements+=(
     Relation<false> |
@@ -203,7 +203,7 @@ ExtendElementProperty:
 ExtendRelationBody:
   '{'
   tags=Tags?
-  props+=ExtendRelationProperty*
+  props+=(ExtendRelationProperty | SecurityProperty)*
 '}'
 ;
 
@@ -279,7 +279,7 @@ fragment RelationConnector:
 RelationBody:
   '{'
   tags=Tags?
-  props+=RelationProperty*
+  props+=(RelationProperty | SecurityProperty)*
 '}'
 ;
 
@@ -322,6 +322,49 @@ MetadataValue:
 MetadataArray:
   '[' values+=(MarkdownOrString) (',' values+=(MarkdownOrString))* ']'
 ;
+
+// Security: vulnerabilities and STRIDE threats --------------------
+
+SecurityProperty:
+  VulnerabilityProperty | ThreatProperty;
+
+// vulnerability CVE-2024-3094 'xz backdoor' {
+//   severity critical
+//   cvss 10.0
+//   status open
+// }
+VulnerabilityProperty:
+  'vulnerability' id=Id title=String? body=SecurityItemBody? ';'?;
+
+// threat T-001 'Spoofed device identity' {
+//   stride spoofing, tampering
+//   likelihood medium
+//   impact high
+//   mitigation 'Mutual TLS'
+// }
+ThreatProperty:
+  'threat' id=Id title=String? body=SecurityItemBody? ';'?;
+
+SecurityItemBody:
+  '{'
+  props+=SecurityItemProperty*
+  '}'
+;
+
+SecurityItemProperty:
+  SecurityItemStringProperty |
+  LinkProperty |
+  SecurityItemAttribute;
+
+SecurityItemStringProperty:
+  key=('title' | 'description') ':'? value=MarkdownOrString ';'?;
+
+// Known keys and values are checked by validation
+SecurityItemAttribute:
+  key=Id ':'? values+=SecurityItemValue (',' values+=SecurityItemValue)* ';'?;
+
+SecurityItemValue:
+  markdown=MarkdownString | text=String | id=Id | number=(Float | Number);
 
 // Views -------------------------------------
 

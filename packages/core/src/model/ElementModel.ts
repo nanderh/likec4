@@ -11,6 +11,8 @@ import type {
   IteratorLike,
   Link,
   RichTextOrEmpty,
+  Threat,
+  Vulnerability,
 } from '../types'
 import { exact, preferDescription, preferSummary, RichText, splitGlobalFqn } from '../types'
 import type * as aux from '../types/_aux'
@@ -136,6 +138,27 @@ export class ElementModel<A extends AnyAux = Any> implements WithTags<A>, WithMe
 
   get links(): ReadonlyArray<Link> {
     return this.$element.links ?? []
+  }
+
+  /**
+   * Known vulnerabilities of the element
+   */
+  get vulnerabilities(): ReadonlyArray<Vulnerability> {
+    return this.$element.vulnerabilities ?? []
+  }
+
+  /**
+   * Threats of the element (STRIDE threat modelling)
+   */
+  get threats(): ReadonlyArray<Threat> {
+    return this.$element.threats ?? []
+  }
+
+  /**
+   * Returns true if the element has vulnerabilities or threats
+   */
+  hasSecurity(): boolean {
+    return this.vulnerabilities.length > 0 || this.threats.length > 0
   }
 
   get defaultView(): LikeC4ViewModel.ScopedElementView<A> | null {

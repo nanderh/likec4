@@ -458,6 +458,25 @@ export class LikeC4Model<A extends Any = Any> {
   }
 
   /**
+   * Returns true if any element or relationship in the model has vulnerabilities or threats.
+   */
+  public hasSecurity(): boolean {
+    return memoizeProp(this, 'hasSecurity', () => {
+      for (const el of this._elements.values()) {
+        if (el.hasSecurity()) {
+          return true
+        }
+      }
+      for (const rel of this._relations.values()) {
+        if (rel.hasSecurity()) {
+          return true
+        }
+      }
+      return false
+    })
+  }
+
+  /**
    * Returns a specific relationship by its ID.
    * If the relationship is not found in the model, it will be searched in the deployment model.
    * Search can be limited to the model or deployment model only.
