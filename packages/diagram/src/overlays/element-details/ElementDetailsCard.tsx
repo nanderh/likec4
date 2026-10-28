@@ -60,7 +60,7 @@ import { MetadataProvider, MetadataValue } from './MetadataValue'
 import { type DetailsSubject, DEPLOYMENT_DETAILS_TAB_KEY, ELEMENT_DETAILS_TAB_KEY } from './subject'
 import { TabPanelDeployments } from './TabPanelDeployments'
 import { TabPanelRelationships } from './TabPanelRelationships'
-import { TabPanelThreats, TabPanelVulnerabilities } from './TabPanelSecurity'
+import { securityItemCounts, TabPanelThreats, TabPanelVulnerabilities } from './TabPanelSecurity'
 import { TabPanelStructure } from './TabPanelStructure'
 
 const Divider = MantineDivider.withProps({
@@ -155,9 +155,13 @@ export function ElementDetailsCard({
   const showSecurity = !!securityElement && viewModel.$model.hasSecurity()
   const baseTabs = subject.deployment ? DEPLOYMENT_TABS : TABS
   const tabs: ReadonlyArray<TabName> = showSecurity ? [...baseTabs, ...SECURITY_TABS] : baseTabs
+  // Counts match the tab contents: items of the element and of its direct relationships
+  const { vulnerabilities: vulnerabilitiesCount, threats: threatsCount } = showSecurity && securityElement
+    ? securityItemCounts(securityElement)
+    : { vulnerabilities: 0, threats: 0 }
   const securityCounts = {
-    Vulnerabilities: securityElement?.vulnerabilities.length ?? 0,
-    Threats: securityElement?.threats.length ?? 0,
+    Vulnerabilities: vulnerabilitiesCount,
+    Threats: threatsCount,
   }
   const hasSummary = logicalElement
     ? logicalElement.hasSummary

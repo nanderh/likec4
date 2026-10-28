@@ -42,6 +42,23 @@ function collect<T>(
   }
 }
 
+function countOf<T>(data: SecurityItemsOf<T>): number {
+  return data.own.length + data.relationships.reduce((acc, r) => acc + r.items.length, 0)
+}
+
+const unsorted = <T,>(items: ReadonlyArray<T>): T[] => [...items]
+
+/**
+ * Number of items listed in the Vulnerabilities and Threats tabs:
+ * items of the element and of its direct relationships
+ */
+export function securityItemCounts(element: LikeC4Model.Element): { vulnerabilities: number; threats: number } {
+  return {
+    vulnerabilities: countOf(collect(element, e => e.vulnerabilities, unsorted)),
+    threats: countOf(collect(element, e => e.threats, unsorted)),
+  }
+}
+
 function relationshipLabel(r: LikeC4Model.Relationship) {
   return (
     <>
