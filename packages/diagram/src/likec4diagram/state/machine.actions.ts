@@ -49,6 +49,7 @@ import {
 } from './assign'
 import { cancelFitDiagram, raiseFitDiagram, setViewport, setViewportCenter } from './machine.actions.layout'
 import { machine } from './machine.setup'
+import { DiagramColorByPersistence } from './persistence'
 import {
   findDiagramEdge,
   findDiagramNode,
@@ -245,6 +246,14 @@ export const assignDynamicViewVariant = () =>
     assertEvent(event, 'switch.dynamicViewVariant')
     return {
       dynamicViewVariant: event.variant,
+    }
+  })
+
+export const assignColorBy = () =>
+  machine.assign(({ event }) => {
+    assertEvent(event, 'switch.colorBy')
+    return {
+      colorBy: DiagramColorByPersistence.write(event.colorBy),
     }
   })
 

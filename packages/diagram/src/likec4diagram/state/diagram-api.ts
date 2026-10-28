@@ -20,7 +20,7 @@ import type { OverlaysActorRef } from '../../overlays/overlaysActor'
 import type { SearchActorRef } from '../../search/searchActor'
 import type { Types } from '../types'
 import type { AlignmentMode } from './aligners'
-import type { ElementViewDisplayVariant } from './machine.setup'
+import type { ColorByMode, ElementViewDisplayVariant } from './machine.setup'
 import type {
   DiagramActorRef,
   DiagramContext,
@@ -153,8 +153,8 @@ export class DiagramApi<A extends Any = Unknown> {
   }
 
   /**
-  * @deprecated Use `openNodeDetails({ type: 'element', element: fqn }, fromNode)`.
-  */
+   * @deprecated Use `openNodeDetails({ type: 'element', element: fqn }, fromNode)`.
+   */
   openElementDetails(fqn: Fqn<A>, fromNode?: NodeId): void {
     this.openNodeDetails({ type: 'element', element: fqn }, fromNode)
   }
@@ -347,6 +347,13 @@ export class DiagramApi<A extends Any = Unknown> {
    */
   switchDynamicViewVariant(variant: DynamicViewDisplayVariant): void {
     this.send({ type: 'switch.dynamicViewVariant', variant })
+  }
+
+  /**
+   * Color nodes by security data ('default' restores own colors)
+   */
+  switchColorBy(colorBy: ColorByMode): void {
+    this.send({ type: 'switch.colorBy', colorBy })
   }
 
   /**

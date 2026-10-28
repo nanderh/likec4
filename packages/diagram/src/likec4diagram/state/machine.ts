@@ -10,6 +10,7 @@ import {
   updateNodeData,
 } from './assign'
 import {
+  assignColorBy,
   assignDynamicViewVariant,
   assignElementViewVariant,
   cancelFitDiagram,
@@ -61,6 +62,10 @@ const _diagramMachine = machine.createMachine({
         }),
         raiseUpdateView(),
       ],
+    },
+    'switch.colorBy': {
+      guard: ({ context, event }) => context.colorBy !== event.colorBy,
+      actions: assignColorBy(),
     },
     'switch.elementViewVariant': {
       guard: ({ context, event }) => context.elementViewVariant !== event.variant,

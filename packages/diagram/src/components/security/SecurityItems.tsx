@@ -46,7 +46,7 @@ export const severityColor = {
   critical: 'red',
   high: 'orange',
   medium: 'yellow',
-  low: 'blue',
+  low: 'green',
   info: 'gray',
 } as const satisfies Record<SecuritySeverity, MantineColor>
 

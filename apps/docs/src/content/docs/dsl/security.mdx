@@ -11,7 +11,8 @@ import { Aside } from '@astrojs/starlight/components';
 Elements and relationships can carry known **vulnerabilities** (CVEs, pentest findings) and
 **threats** from [STRIDE](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats) threat modelling.
 They are displayed in the element details (_Vulnerabilities_ and _Threats_ tabs),
-in the relationship popover, and as a badge on diagram nodes with unresolved items.
+in the relationship popover, as a badge on diagram nodes with unresolved items,
+and can color the diagram by risk.
 
 ## Vulnerabilities
 
@@ -93,6 +94,26 @@ model {
 
 The _Threats_ tab of an element lists its own threats and the threats of its direct relationships,
 with a STRIDE summary on top.
+
+## Color by risk
+
+When the model has vulnerabilities or threats, the navigation panel shows a **Color by** menu (palette icon).
+It recolors all nodes of every view, similar to label sets in other tools:
+
+| Mode                   | Node color                                                    |
+| ---------------------- | ------------------------------------------------------------- |
+| Element colors         | own colors (default)                                          |
+| Highest risk (all)     | highest of vulnerability severity and threat risk             |
+| Vulnerability severity | highest severity of unresolved vulnerabilities                |
+| Threat risk            | highest risk of unresolved threats                            |
+
+Only unresolved items (`open`, `in-progress` or without status) count.
+Elements whose items are all resolved are blue, elements without items are muted.
+The selected mode is kept while navigating between views (per browser session).
+
+This is a viewer setting and does not change the views. To keep a colored version of a view,
+for example in an exported site, use a [style group](/dsl/views/predicates/) with tag-based rules
+in a view that `extends` the original.
 
 ## Separate threat model
 

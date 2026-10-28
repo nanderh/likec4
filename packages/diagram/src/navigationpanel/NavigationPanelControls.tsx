@@ -14,6 +14,7 @@ import { useOptionalCurrentViewModel } from '../hooks/useCurrentViewModel'
 import { selectDiagramContext, useDiagramSelector } from '../hooks/useDiagram'
 import { deriveToggledFeatures } from '../likec4diagram/state/machine.setup'
 import {
+  ColorByControl,
   LayoutWarning,
   LogoButton,
   NavigationButtons,
@@ -189,6 +190,7 @@ export const NavigationPanelControls = memo(() => {
         {editBtnVisible && <ToggleReadonly key="toggle-readonly" disabled={editBtnDisabled} isReadOnly={isReadOnly} />}
         {enableDynamicViewWalkthrough && isDynamicView && <DynamicViewControls key="dynamic-view-controls" />}
         {isElementView && <ElementViewControls key="element-view-controls" />}
+        {hasModel && <ColorByControl key="color-by" />}
         {enableSearch && !enableCompareWithLatest && <SearchControl key="search-control" />}
         <LayoutWarning key="outdated-manual-layout-warning" />
       </m.div>

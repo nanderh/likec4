@@ -33,6 +33,7 @@ import { NodeNotes } from './NodeNotes'
 import { NodeSecurity } from './NodeSecurity'
 import { CompoundDeploymentToolbar, CompoundElementToolbar } from './toolbar/CompoundToolbar'
 import { DeploymentElementToolbar, ElementToolbar } from './toolbar/ElementToolbar'
+import { useColorByOverride } from './useColorBy'
 
 function ElementTags(props: ElementTagsProps) {
   const diagram = useDiagram()
@@ -102,8 +103,9 @@ export function CompoundDetailsButtonWithHandler(
 export function ElementNode(props: Types.NodeProps<'element'>) {
   const { enableElementTags, enableElementDetails, enableReadOnly, enableCompareWithLatest, enableNotes } =
     useEnabledFeatures()
+  const colorBy = useColorByOverride(props.data.modelFqn)
   return (
-    <ElementNodeContainer nodeProps={props}>
+    <ElementNodeContainer nodeProps={props} {...colorBy}>
       {enableCompareWithLatest && <NodeDrifts nodeProps={props} />}
       <ElementShape {...props} />
       <ElementData {...props} aria-hidden />
@@ -121,8 +123,9 @@ export function ElementNode(props: Types.NodeProps<'element'>) {
 export function DeploymentNode(props: Types.NodeProps<'deployment'>) {
   const { enableElementTags, enableElementDetails, enableReadOnly, enableCompareWithLatest, enableNotes } =
     useEnabledFeatures()
+  const colorBy = useColorByOverride(props.data.modelFqn)
   return (
-    <ElementNodeContainer nodeProps={props}>
+    <ElementNodeContainer nodeProps={props} {...colorBy}>
       {enableCompareWithLatest && <NodeDrifts nodeProps={props} />}
       <ElementShape {...props} />
       <ElementData {...props} aria-hidden />
@@ -151,10 +154,12 @@ const hasDrifts = (props: Types.NodeProps) => {
 export function CompoundElementNode(props: Types.NodeProps<'compound-element'>) {
   const { enableElementDetails, enableReadOnly, enableCompareWithLatest } = useEnabledFeatures()
   const showDrifts = enableCompareWithLatest && hasDrifts(props)
+  const colorBy = useColorByOverride(props.data.modelFqn)
   return (
     <CompoundNodeContainer
       className={showDrifts ? compoundHasDrifts : undefined}
       nodeProps={props}
+      {...colorBy}
     >
       {enableCompareWithLatest && <NodeDrifts nodeProps={props} />}
       <CompoundTitle {...props} aria-hidden />
@@ -169,10 +174,12 @@ export function CompoundElementNode(props: Types.NodeProps<'compound-element'>) 
 export function CompoundDeploymentNode(props: Types.NodeProps<'compound-deployment'>) {
   const { enableElementDetails, enableReadOnly, enableCompareWithLatest } = useEnabledFeatures()
   const showDrifts = enableCompareWithLatest && hasDrifts(props)
+  const colorBy = useColorByOverride(props.data.modelFqn)
   return (
     <CompoundNodeContainer
       className={showDrifts ? compoundHasDrifts : undefined}
       nodeProps={props}
+      {...colorBy}
     >
       {enableCompareWithLatest && <NodeDrifts nodeProps={props} />}
       <CompoundTitle {...props} aria-hidden />

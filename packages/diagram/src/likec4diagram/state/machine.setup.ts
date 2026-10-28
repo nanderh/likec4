@@ -39,6 +39,7 @@ import {
   setup,
 } from 'xstate'
 import { MaxZoom, MinZoom } from '../../base'
+import type { ColorByMode } from '../../components/security/colorBy'
 import { type EnabledFeatures, type TogglableFeature, DefaultFeatures } from '../../context/DiagramFeatures'
 import { editorActorLogic } from '../../editor/actor/machine'
 import type { XYFlowInstance, XYStoreApi } from '../../hooks/useXYFlow'
@@ -52,7 +53,7 @@ import type { Types } from '../types'
 import type { AlignmentMode } from './aligners'
 import { type HotKeyEvent, hotkeyActorLogic } from './hotkeyActor'
 import { type MediaPrintEvent, mediaPrintActorLogic } from './mediaPrintActor'
-import { DiagramToggledFeaturesPersistence } from './persistence'
+import { DiagramColorByPersistence, DiagramToggledFeaturesPersistence } from './persistence'
 
 /**
  * Display variant for element views: plain boxes-and-lines diagram, or a compact graph
@@ -60,6 +61,9 @@ import { DiagramToggledFeaturesPersistence } from './persistence'
  * Client-side only - not persisted, no DSL/grammar impact.
  */
 export type ElementViewDisplayVariant = 'diagram' | 'graph'
+
+// Client-side only - persisted in session storage, no DSL/grammar impact.
+export type { ColorByMode } from '../../components/security/colorBy'
 
 /**
  * Navigation history entry represents a current view state,
@@ -160,6 +164,7 @@ export interface Context extends Input {
   dynamicViewVariant: DynamicViewDisplayVariant
   // If Element View
   elementViewVariant: ElementViewDisplayVariant
+  colorBy: ColorByMode
   activeWalkthrough: null | {
     stepId: StepPath
     activeFlow: StepPath | null
@@ -211,6 +216,7 @@ export function Context({ input }: { input: Input }): Context {
       input.view._type === 'dynamic' ? input.view.variant : 'diagram'
     ) ?? 'diagram',
     elementViewVariant: 'diagram',
+    colorBy: DiagramColorByPersistence.read() ?? 'default',
     activeWalkthrough: null,
     collapsedSequenceFlows: {},
     minZoom: input.minZoom ?? MinZoom,
@@ -274,6 +280,7 @@ export type Events =
   | { type: 'focus.autoUnfocus' }
   | { type: 'switch.dynamicViewVariant'; variant: DynamicViewDisplayVariant }
   | { type: 'switch.elementViewVariant'; variant: ElementViewDisplayVariant }
+  | { type: 'switch.colorBy'; colorBy: ColorByMode }
   | { type: 'walkthrough.start'; stepId?: StepPath | undefined }
   | { type: 'walkthrough.step'; direction: 'next' | 'prev'; stepId?: never }
   | { type: 'walkthrough.step'; stepId: StepPath; direction?: never }

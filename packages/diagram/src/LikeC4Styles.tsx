@@ -3,11 +3,13 @@ import type {
   LikeC4Styles as LikeC4StylesLib,
   ThemeColorValues,
 } from '@likec4/core'
+import { computeColorValues } from '@likec4/core/styles'
 import { useMantineStyleNonce } from '@mantine/core'
 import { memo, useMemo } from 'react'
 import type { JSX } from 'react/jsx-runtime'
 import { entries, join, map, pipe } from 'remeda'
 import { MAX_COMPOUND_DEPTH } from './base/const'
+import { SecurityPalette } from './components/security/colorBy'
 import { useLikeC4Styles } from './hooks/useLikeC4Styles'
 
 const scheme = (scheme: 'dark' | 'light') => `[data-mantine-color-scheme="${scheme}"]`
@@ -58,9 +60,15 @@ ${whenDark} ${selector} {
   ].map(s => s.trim()).join('\n')
 }
 
+// Palette of "color by" security modes, computed once
+let securityPaletteColors: Record<string, ThemeColorValues> | undefined
+
 function generateBuiltInColorStyles(styles: LikeC4StylesLib, rootSelector: string) {
+  securityPaletteColors ??= Object.fromEntries(
+    entries(SecurityPalette).map(([name, hex]) => [name, computeColorValues(hex)]),
+  )
   return pipe(
-    styles.theme.colors,
+    { ...securityPaletteColors, ...styles.theme.colors },
     entries(),
     map(([name, colors]) =>
       toStyle(styles, {
