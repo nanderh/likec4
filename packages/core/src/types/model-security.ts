@@ -133,6 +133,10 @@ export interface Vulnerability {
   readonly description?: MarkdownOrString | null
   readonly mitigation?: MarkdownOrString | null
   readonly links?: readonly Link[] | null
+  /**
+   * Where the item comes from, e.g. names of documents or notes
+   */
+  readonly source?: readonly string[] | null
 }
 
 /**
@@ -156,6 +160,10 @@ export interface Threat {
   readonly description?: MarkdownOrString | null
   readonly mitigation?: MarkdownOrString | null
   readonly links?: readonly Link[] | null
+  /**
+   * Where the item comes from, e.g. names of documents or notes
+   */
+  readonly source?: readonly string[] | null
 }
 
 export type WithSecurity = {

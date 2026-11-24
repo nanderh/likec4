@@ -16,6 +16,7 @@ import {
   print,
   property,
   select,
+  separateComma,
   separateNewLine,
   spaceBetween,
   text,
@@ -192,6 +193,22 @@ export const linksProperty = <
 type VulnerabilityData = z.output<typeof common.vulnerability>
 type ThreatData = z.output<typeof common.threat>
 
+/**
+ * source 'Fuse Programming', 'Questions'
+ */
+function securitySourceProperty<A extends { source?: ReadonlyArray<string> | null | undefined }>(): Op<A> {
+  return select(
+    e => e.source,
+    when(
+      s => s.length > 0,
+      spaceBetween(
+        print('source'),
+        foreach(inlineText(), separateComma()),
+      ),
+    ),
+  )
+}
+
 function hasSecurityItemBody(item: VulnerabilityData | ThreatData): boolean {
   const { id: _id, title: _title, ...rest } = item
   return !isEmptyish(rest) && !('stride' in rest && Object.keys(rest).length === 1 && rest.stride.length === 0)
@@ -212,6 +229,7 @@ export function vulnerabilityItem(): Op<VulnerabilityData> {
         property('status'),
         descriptionProperty(),
         markdownProperty('mitigation'),
+        securitySourceProperty(),
         linksProperty(),
       ),
     ),
@@ -236,6 +254,7 @@ export function threatItem(): Op<ThreatData> {
         property('status'),
         descriptionProperty(),
         markdownProperty('mitigation'),
+        securitySourceProperty(),
         linksProperty(),
       ),
     ),

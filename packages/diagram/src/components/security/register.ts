@@ -57,6 +57,10 @@ export interface RegisterRow {
    */
   readonly status: SecurityStatus
   readonly statusGroup: SecurityStatusGroup
+  /**
+   * Where the item comes from, e.g. names of documents or notes
+   */
+  readonly source: readonly string[]
 }
 
 export type RegisterColumn =
@@ -69,6 +73,7 @@ export type RegisterColumn =
   | 'impact'
   | 'risk'
   | 'status'
+  | 'source'
 
 function elementLabel(element: LikeC4Model.Element): string {
   return element.title === element.id ? element.id : `${element.title} (${element.id})`
@@ -93,6 +98,7 @@ function threatRow(threat: Threat, owner: RegisterOwner, ownerKey: string): Regi
     risk: threatRisk(threat),
     status,
     statusGroup: securityStatusGroup(status),
+    source: threat.source ?? [],
   }
 }
 
@@ -110,6 +116,7 @@ function vulnerabilityRow(vulnerability: Vulnerability, owner: RegisterOwner, ow
     risk: vulnerabilitySeverity(vulnerability),
     status,
     statusGroup: securityStatusGroup(status),
+    source: vulnerability.source ?? [],
   }
 }
 
@@ -194,6 +201,11 @@ export function compareRegisterRows(a: RegisterRow, b: RegisterRow, column: Regi
       return a.risk && b.risk ? -compareSeverity(a.risk, b.risk) : (a.risk ? -1 : b.risk ? 1 : 0)
     case 'status':
       return statusRank[a.status] - statusRank[b.status]
+    case 'source': {
+      // rows without source last
+      const as = a.source.join(', '), bs = b.source.join(', ')
+      return !as || !bs ? (as ? -1 : bs ? 1 : 0) : collator.compare(as, bs)
+    }
   }
 }
 
@@ -223,6 +235,7 @@ export interface RegisterFilters {
   readonly id?: string
   readonly title?: string
   readonly owner?: string
+  readonly source?: string
   readonly kind?: ReadonlyArray<SecurityItemKind>
   /**
    * Rows with any of the selected categories
@@ -247,6 +260,7 @@ export function filterRegister(rows: ReadonlyArray<RegisterRow>, filters: Regist
     includesText(row.id, filters.id)
     && includesText(row.title, filters.title)
     && includesText(row.owner.label, filters.owner)
+    && includesText(row.source.join(' | '), filters.source)
     && includesValue(row.kind, filters.kind)
     && (!filters.stride?.length || row.stride.some(s => filters.stride!.includes(s)))
     && includesValue(row.likelihood, filters.likelihood)
@@ -271,6 +285,7 @@ export const RegisterCsvColumns = [
   'impact',
   'risk',
   'status',
+  'source',
 ] as const
 
 /**
@@ -291,6 +306,7 @@ export function registerToCsv(rows: ReadonlyArray<RegisterRow>): string {
         row.impact ?? '',
         row.risk ?? '',
         row.status,
+        row.source.join('; '),
       ].map(csvCell).join(','),
     )
   }

@@ -41,6 +41,7 @@ model {
 | `cwe`         | Weakness id, e.g. `CWE-79`                                                              |
 | `status`      | `open`, `in-progress`, `mitigated`, `accepted`, `transferred`, `resolved`, `false-positive` |
 | `title`, `description`, `mitigation` | text or markdown                                                 |
+| `source`      | one or more strings: where the item comes from, e.g. `source 'Pentest 2026', 'Notes'`   |
 | `link`        | one or more links                                                                       |
 
 Identifiers like `CVE-...`, `GHSA-...` and `CWE-...` link to NVD, GitHub advisories and MITRE automatically,
@@ -73,6 +74,7 @@ model {
 | `risk`                  | `low`, `medium`, `high`, `critical` (derived from likelihood × impact if omitted) |
 | `status`                | same as for vulnerabilities                                             |
 | `title`, `description`, `mitigation` | text or markdown                                           |
+| `source`                | one or more strings, same as for vulnerabilities                        |
 | `link`                  | one or more links                                                       |
 
 Threats and vulnerabilities without `status` are considered `open`.
@@ -128,6 +130,9 @@ type, id, title, element or relationship, STRIDE, likelihood, impact, risk (seve
   otherwise the first view that does.
 - The details button at the end of a row opens the element details (or relationship details).
 - **Export CSV** downloads the filtered and sorted rows.
+
+The register also has a _Source_ column with the `source` of each item, and element details show it
+as a separate field.
 
 The window stays open while you navigate, and can be moved and resized.
 

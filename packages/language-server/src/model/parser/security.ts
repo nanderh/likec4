@@ -16,7 +16,7 @@ import type { ast } from '../../ast'
 type AttributeSpec =
   | { type: 'enum'; values: readonly string[]; parse: (value: string) => string | null; multiple?: boolean }
   | { type: 'number'; min: number; max: number }
-  | { type: 'text' }
+  | { type: 'text'; multiple?: boolean }
   | { type: 'markdown' }
 
 /**
@@ -62,6 +62,8 @@ const parseStatus = enumOf<SecurityStatus>(SecurityStatuses, {
 
 const status: AttributeSpec = { type: 'enum', values: SecurityStatuses, parse: parseStatus }
 const riskLevel: AttributeSpec = { type: 'enum', values: RiskLevels, parse: parseRiskLevel }
+// where the item comes from, e.g. a document or note: source 'Fuse Programming', 'Questions'
+const source: AttributeSpec = { type: 'text', multiple: true }
 
 export const vulnerabilityAttributes = {
   severity: { type: 'enum', values: SecuritySeverities, parse: parseSeverity },
@@ -70,6 +72,7 @@ export const vulnerabilityAttributes = {
   cwe: { type: 'text' },
   status,
   mitigation: { type: 'markdown' },
+  source,
 } as const satisfies Record<string, AttributeSpec>
 
 export const threatAttributes = {
@@ -84,6 +87,7 @@ export const threatAttributes = {
   risk: riskLevel,
   status,
   mitigation: { type: 'markdown' },
+  source,
 } as const satisfies Record<string, AttributeSpec>
 
 export function securityAttributesOf(
@@ -114,7 +118,8 @@ type AttributeResult =
  * returns an error message if the value is not valid.
  */
 export function readSecurityAttribute(spec: AttributeSpec, attr: ast.SecurityItemAttribute): AttributeResult {
-  if (spec.type !== 'enum' || !spec.multiple) {
+  const multiple = (spec.type === 'enum' || spec.type === 'text') && !!spec.multiple
+  if (!multiple) {
     if (attr.values.length > 1) {
       return { error: `Expected single value for "${attr.key}"` }
     }
@@ -152,6 +157,16 @@ export function readSecurityAttribute(spec: AttributeSpec, attr: ast.SecurityIte
       return { value: { txt: dedent(rawValue(first)).trim() } }
     }
     case 'text': {
+      if (multiple) {
+        const values = [] as string[]
+        for (const v of attr.values) {
+          const value = rawValue(v).trim()
+          if (value && !values.includes(value)) {
+            values.push(value)
+          }
+        }
+        return values.length > 0 ? { value: values } : { error: `Missing value for "${attr.key}"` }
+      }
       return { value: rawValue(first).trim() }
     }
   }

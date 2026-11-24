@@ -182,6 +182,26 @@ function ItemSection({ label, value }: { label: string; value: Vulnerability['de
   )
 }
 
+/**
+ * Where the item comes from, e.g. names of documents or notes
+ */
+function ItemSource({ source }: { source: readonly string[] | null | undefined }) {
+  if (!source || source.length === 0) {
+    return null
+  }
+  return (
+    <HStack gap="1" alignItems="baseline" flexWrap="wrap">
+      <Label>source</Label>
+      {source.map((s, i) => (
+        <Text key={i} component="span" fz="xs" c="dimmed">
+          {s}
+          {i < source.length - 1 ? ',' : ''}
+        </Text>
+      ))}
+    </HStack>
+  )
+}
+
 function ItemLinks({ links }: { links: readonly LinkData[] | null | undefined }) {
   if (!links || links.length === 0) {
     return null
@@ -234,6 +254,7 @@ export function VulnerabilityCard({ vulnerability: v }: { vulnerability: Vulnera
       )}
       <ItemSection label="description" value={v.description} />
       <ItemSection label="mitigation" value={v.mitigation} />
+      <ItemSource source={v.source} />
       <ItemLinks links={v.links} />
     </Paper>
   )
@@ -270,6 +291,7 @@ export function ThreatCard({ threat: t }: { threat: Threat }) {
       </HStack>
       <ItemSection label="description" value={t.description} />
       <ItemSection label="mitigation" value={t.mitigation} />
+      <ItemSource source={t.source} />
       <ItemLinks links={t.links} />
     </Paper>
   )

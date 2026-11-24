@@ -268,12 +268,14 @@ describe('LikeC4.toBuilder / toDSL / writeDSL', () => {
               Malicious code in **xz**
             '''
             link https://nvd.nist.gov/vuln/detail/CVE-2024-3094
+            source 'Pentest report'
           }
           threat T-1 'Spoofed device' {
             stride spoofing, tampering
             likelihood medium
             impact high
             mitigation 'Mutual TLS'
+            source 'Attestation', 'Questions, part 2', "Owner's notes"
           }
         }
         pki = system
@@ -294,6 +296,12 @@ describe('LikeC4.toBuilder / toDSL / writeDSL', () => {
 
     expect(reloadedModel.element('gw').vulnerabilities).toEqual(original.element('gw').vulnerabilities)
     expect(reloadedModel.element('gw').threats).toEqual(original.element('gw').threats)
+    expect(reloadedModel.element('gw').threats[0]!.source).toEqual([
+      'Attestation',
+      'Questions, part 2',
+      `Owner's notes`,
+    ])
+    expect(reloadedModel.element('gw').vulnerabilities[0]!.source).toEqual(['Pentest report'])
     const [rel] = [...reloadedModel.relationships()]
     expect(rel!.threats).toEqual([
       { id: 'T-2', stride: ['information-disclosure'], risk: 'low', status: 'accepted' },

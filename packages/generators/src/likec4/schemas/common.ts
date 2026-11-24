@@ -206,6 +206,7 @@ const securityItemProps = {
   description: markdownOrString.nullish(),
   mitigation: markdownOrString.nullish(),
   links: links.nullish(),
+  source: z.array(z.string()).readonly().nullish(),
 }
 
 export const vulnerability = z

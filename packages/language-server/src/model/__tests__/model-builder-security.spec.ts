@@ -174,7 +174,7 @@ describe('LikeC4ModelBuilder - vulnerabilities and threats', () => {
       'Vulnerability with id "CVE-1" is already defined',
     ])
     expect(warnings).toEqual([
-      'Unknown property "owner", expected one of: severity, cvss, vector, cwe, status, mitigation',
+      'Unknown property "owner", expected one of: severity, cvss, vector, cwe, status, mitigation, source',
       'Threat has no STRIDE category, add "stride spoofing, tampering, ..."',
     ])
     const model = await buildLikeC4Model()
@@ -198,5 +198,37 @@ describe('LikeC4ModelBuilder - vulnerabilities and threats', () => {
       }
     `)
     expect(errors).toEqual([])
+  })
+
+  it('parses source as one or more strings', async ({ expect }) => {
+    const { validate, buildLikeC4Model } = createTestServices()
+    const { errors, warnings } = await validate(`
+      specification {
+        element system
+      }
+      model {
+        system gateway {
+          threat GW-01 'Firmware drift' {
+            stride T
+            source 'Attestation', 'Mitre EMB3D Mitigation Coverage', 'Attestation'
+          }
+          vulnerability V-1 {
+            source 'Pentest 2026'
+          }
+          threat GW-02 {
+            stride S
+            source ''
+          }
+        }
+      }
+    `)
+    expect(errors).toEqual(['Missing value for "source"'])
+    expect(warnings).toEqual([])
+    const gateway = (await buildLikeC4Model()).element('gateway')
+    expect(gateway.threats.map(t => t.source)).toEqual([
+      ['Attestation', 'Mitre EMB3D Mitigation Coverage'],
+      undefined,
+    ])
+    expect(gateway.vulnerabilities[0]!.source).toEqual(['Pentest 2026'])
   })
 })

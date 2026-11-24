@@ -37,6 +37,7 @@ function testModel() {
             likelihood: 'low',
             impact: 'critical',
             status: 'open',
+            source: ['Fuse Programming', 'Questions'],
           },
           { id: 'KS-09', title: 'Key material, "persisted"', stride: ['tampering'], risk: 'high', status: 'accepted' },
         ],
@@ -117,17 +118,21 @@ describe('security register', () => {
     expect(ids(filterRegister(rows, { likelihood: ['none'] }))).toEqual(['KS-09', 'CVE-2024-3094'])
     expect(ids(filterRegister(rows, { status: ['accepted'], title: 'key' }))).toEqual(['KS-09'])
     expect(filterRegister(rows, { status: [] })).toHaveLength(4)
+    expect(ids(filterRegister(rows, { source: 'question' }))).toEqual(['KS-01'])
   })
 
   it('exports CSV with quoting', () => {
     const csv = registerToCsv(sortRegister(rows, { column: 'id', direction: 'asc' }))
     const lines = csv.trimEnd().split('\r\n')
-    expect(lines[0]).toBe('type,id,title,owner type,owner,stride,likelihood,impact,risk,status')
+    expect(lines[0]).toBe('type,id,title,owner type,owner,stride,likelihood,impact,risk,status,source')
     expect(lines).toContain(
-      'threat,KS-09,"Key material, ""persisted""",element,gateway.keyStore,tampering,,,high,accepted',
+      'threat,KS-01,Key extraction,element,gateway.keyStore,information-disclosure spoofing,low,critical,medium,open,Fuse Programming; Questions',
     )
     expect(lines).toContain(
-      'threat,DF-01,DoS on CMP,relationship,gateway -> pki,denial-of-service,medium,medium,medium,open',
+      'threat,KS-09,"Key material, ""persisted""",element,gateway.keyStore,tampering,,,high,accepted,',
+    )
+    expect(lines).toContain(
+      'threat,DF-01,DoS on CMP,relationship,gateway -> pki,denial-of-service,medium,medium,medium,open,',
     )
   })
 })

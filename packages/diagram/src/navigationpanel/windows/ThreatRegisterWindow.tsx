@@ -143,7 +143,7 @@ const riskOptions: Option[] = [
 ]
 const statusOptions: Option[] = SecurityStatuses.map(s => ({ value: s, label: s }))
 
-type TextColumn = 'id' | 'title' | 'owner'
+type TextColumn = 'id' | 'title' | 'owner' | 'source'
 type ValuesColumn = Exclude<keyof RegisterFilters, TextColumn>
 
 function hasValue(filters: RegisterFilters, column: keyof RegisterFilters): boolean {
@@ -395,6 +395,7 @@ export function ThreatRegisterWindow() {
               {valuesHeader('impact', 'Impact', levelOptions)}
               {valuesHeader('risk', 'Risk', riskOptions)}
               {valuesHeader('status', 'Status', statusOptions)}
+              {textHeader('source', 'Source')}
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -430,6 +431,7 @@ export function ThreatRegisterWindow() {
                 <Table.Td>
                   <StatusBadge status={r.status} />
                 </Table.Td>
+                <Table.Td data-wrap>{r.source.join(', ')}</Table.Td>
                 <Table.Td>
                   <Tooltip label="Open details" fz="xs" withinPortal={false} openDelay={300}>
                     <ActionIcon
