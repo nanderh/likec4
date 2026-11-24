@@ -12,6 +12,8 @@ A _Threat register_ window in the navigation panel lists all threats and vulnera
 
 Node badges, _Color by_ and element details of a parent element include the threats and vulnerabilities of its children and of relationships between them, so a collapsed parent shows the risk inside it. Element details separate own items from items inherited from children. A scoped view that does not show its scope element (e.g. children in groups) shows the threats of that element and its relationships in a badge next to the view title.
 
+Validation warns when the same threat or vulnerability id is defined on more than one element or relationship, or again in an `extend` of the same element. The warning for a relationship `extend` that matches no relationship lists the nearest relationships.
+
 Accepted and transferred items count as _risk carried_, not as resolved: _Color by_ shows elements with only carried risk in their own color, and node badges show a second, muted marker for them.
 
 Note: `threat` and `vulnerability` are now keywords and can no longer be used as element names or kinds.

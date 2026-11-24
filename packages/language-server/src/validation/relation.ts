@@ -69,20 +69,93 @@ export const checkRelationBody = (_services: LikeC4Services): ValidationCheck<as
   })
 }
 
+type RelationSummary = {
+  readonly source: string
+  readonly target: string
+  readonly title: string
+  readonly kind: string
+  readonly isBidirectional: boolean
+}
+
+type ProjectRelations = {
+  readonly fingerprints: Set<string>
+  readonly relations: ReadonlyArray<RelationSummary>
+}
+
+/**
+ * Edit distance between two strings, case insensitive
+ */
+export function editDistance(a: string, b: string): number {
+  a = a.toLowerCase()
+  b = b.toLowerCase()
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    const current = [i]
+    for (let j = 1; j <= b.length; j++) {
+      current[j] = Math.min(
+        previous[j]! + 1,
+        current[j - 1]! + 1,
+        previous[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1),
+      )
+    }
+    previous = current
+  }
+  return previous[b.length]!
+}
+
+function formatRelation(r: RelationSummary): string {
+  const arrow = r.isBidirectional ? '<->' : '->'
+  const title = r.title ? ` '${r.title}'` : ''
+  const kind = r.kind !== 'default' ? ` [${r.kind}]` : ''
+  return `${r.source} ${arrow} ${r.target}${title}${kind}`
+}
+
+/**
+ * Relations closest to an extend that matches nothing:
+ * relations between the same elements if there are any, otherwise relations from the same source
+ * or to the same target; ordered by similarity of the title.
+ */
+export function nearestRelations(
+  relations: ReadonlyArray<RelationSummary>,
+  extend: { source: string; target: string; title: string },
+  limit = 3,
+): RelationSummary[] {
+  const { source, target, title } = extend
+  const sameEndpoints = relations.filter(r =>
+    (r.source === source && r.target === target) || (r.source === target && r.target === source)
+  )
+  const candidates = sameEndpoints.length > 0
+    ? sameEndpoints
+    : relations.filter(r => r.source === source || r.target === target)
+  return candidates
+    .map(r => ({ r, distance: editDistance(r.title, title) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, limit)
+    .map(({ r }) => r)
+}
+
 export const extendRelationChecks = (services: LikeC4Services): ValidationCheck<ast.ExtendRelation> => {
   const modelParser = services.likec4.ModelParser
 
-  const cache = new WorkspaceCache<ProjectId, Set<string>>(services.shared, DocumentState.Linked)
+  const cache = new WorkspaceCache<ProjectId, ProjectRelations>(services.shared, DocumentState.Linked)
 
-  function getProjectFingerprints(projectId: ProjectId): Set<string> {
-    return cache.get(projectId, () =>
-      new Set(
-        pipe(
-          services.shared.workspace.LangiumDocuments.projectDocuments(projectId).toArray(),
-          flatMap(doc => doc.c4Relations ?? []),
-          map(rel => relationFingerprint(rel)),
-        ),
-      ))
+  function getProjectRelations(projectId: ProjectId): ProjectRelations {
+    return cache.get(projectId, () => {
+      const relations = pipe(
+        services.shared.workspace.LangiumDocuments.projectDocuments(projectId).toArray(),
+        flatMap(doc => doc.c4Relations ?? []),
+      )
+      return {
+        fingerprints: new Set(map(relations, rel => relationFingerprint(rel))),
+        relations: map(relations, rel => ({
+          source: FqnRef.flatten(rel.source),
+          target: FqnRef.flatten(rel.target),
+          title: rel.title ?? '',
+          kind: rel.kind ?? 'default',
+          isBidirectional: !!rel.isBidirectional,
+        })),
+      }
+    })
   }
 
   return tryOrLog((el, accept) => {
@@ -138,11 +211,17 @@ export const extendRelationChecks = (services: LikeC4Services): ValidationCheck<
       isBidirectional: el.isBidirectional || undefined,
     })
 
-    const hasMatch = getProjectFingerprints(projectId).has(extendKey)
-    if (!hasMatch) {
+    const { fingerprints, relations } = getProjectRelations(projectId)
+    if (!fingerprints.has(extendKey)) {
+      const nearest = nearestRelations(relations, {
+        source: FqnRef.flatten(source),
+        target: FqnRef.flatten(target),
+        title,
+      })
+      const hint = nearest.length > 0 ? `. Nearest: ${nearest.map(formatRelation).join(', ')}` : ''
       accept(
         'warning',
-        'This extend does not match any relation (by source, kind, target, title, and directionality)',
+        `This extend does not match any relation (by source, kind, target, title, and directionality)${hint}`,
         {
           node: el,
         },

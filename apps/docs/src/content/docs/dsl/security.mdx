@@ -176,6 +176,11 @@ model {
 ```
 
 <Aside type='note'>
-Identifiers must be unique per element or relationship.
-If the same identifier is defined again in an `extend`, the first definition wins.
+Identifiers should be unique in the project. Validation warns when the same threat or vulnerability
+identifier is defined on more than one element or relationship. If an `extend` defines an identifier
+again for the same element or relationship, the first definition wins, also with a warning.
 </Aside>
+
+An `extend` of a relationship must match the relationship by source, target, kind, title and direction.
+When it matches nothing, the warning lists the nearest relationships: those between the same elements,
+otherwise those from the same source or to the same target, by similarity of the title.
