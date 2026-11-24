@@ -24,6 +24,7 @@ export {
   type ElementSecurityScope,
   elementSecurityScope,
   inheritedSecurityItems,
+  ownAndDirectSecurityItems,
   rolledUpSecurityItems,
   type SecurityItemsOfElement,
   type SecurityItemsOfRelationship,

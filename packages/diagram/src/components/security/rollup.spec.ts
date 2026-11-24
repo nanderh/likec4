@@ -2,7 +2,12 @@ import { Builder } from '@likec4/core/builder'
 import { LikeC4Model } from '@likec4/core/model'
 import type { Threat } from '@likec4/core/types'
 import { describe, expect, it } from 'vitest'
-import { elementSecurityScope, inheritedSecurityItems, rolledUpSecurityItems } from './rollup'
+import {
+  elementSecurityScope,
+  inheritedSecurityItems,
+  ownAndDirectSecurityItems,
+  rolledUpSecurityItems,
+} from './rollup'
 
 const threat = (id: string, status?: Threat['status']): Threat => ({
   id,
@@ -80,6 +85,14 @@ describe('security roll-up', () => {
       'KS-09',
       'V-HAL',
     ])
+  })
+
+  it('own and direct items, for the scope of a view without the element', () => {
+    expect(ids(ownAndDirectSecurityItems(model.element('gateway')))).toEqual([
+      relThreat('gateway', 'pki'),
+      'GW-01',
+      relThreat('meter', 'gateway'),
+    ].sort())
   })
 
   it('a leaf element rolls up only its own items', () => {

@@ -10,7 +10,7 @@ Elements and relationships can document known vulnerabilities (`vulnerability CV
 
 A _Threat register_ window in the navigation panel lists all threats and vulnerabilities of the project, with sorting and filtering on every column, navigation to the element or relationship in a view, and CSV export.
 
-Node badges, _Color by_ and element details of a parent element include the threats and vulnerabilities of its children and of relationships between them, so a collapsed parent shows the risk inside it. Element details separate own items from items inherited from children.
+Node badges, _Color by_ and element details of a parent element include the threats and vulnerabilities of its children and of relationships between them, so a collapsed parent shows the risk inside it. Element details separate own items from items inherited from children. A scoped view that does not show its scope element (e.g. children in groups) shows the threats of that element and its relationships in a badge next to the view title.
 
 Accepted and transferred items count as _risk carried_, not as resolved: _Color by_ shows elements with only carried risk in their own color, and node badges show a second, muted marker for them.
 

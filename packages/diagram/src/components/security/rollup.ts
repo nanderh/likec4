@@ -122,3 +122,12 @@ export function rolledUpSecurityItems(element: Element): SecurityItemsSubject {
   rolledUpCache.set(element, items)
   return items
 }
+
+/**
+ * Items of the element and of its direct relationships, without items of children.
+ * Used for the scope element of a view that does not show the element itself.
+ */
+export function ownAndDirectSecurityItems(element: Element): SecurityItemsSubject {
+  const scope = elementSecurityScope(element)
+  return concat([scope.own, ...scope.direct])
+}

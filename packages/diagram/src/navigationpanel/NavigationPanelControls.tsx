@@ -17,6 +17,7 @@ import {
   ThreatRegisterButton,
   ToggleReadonly,
   ViewDetailsButton,
+  ViewScopeSecurity,
 } from './controls'
 import { NavigationBreadcrumbs } from './controls/NavigationBreadcrumbs'
 import { ElementViewControls } from './ElementViewControls'
@@ -89,6 +90,7 @@ export const NavigationPanelControls = memo(() => {
         viewTitle={viewTitle}
         viewModel={viewModel}
       />
+      <ViewScopeSecurity key="view-scope-security" viewModel={viewModel} />
 
       <m.div
         key="actions"
