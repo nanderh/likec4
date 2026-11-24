@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   cvssToSeverity,
   highestSeverity,
+  isRiskCarriedSecurityStatus,
   isUnresolvedSecurityStatus,
   parseStrideCategory,
+  securityStatusGroup,
   threatRisk,
   vulnerabilitySeverity,
 } from './model-security'
@@ -60,5 +62,19 @@ describe('model-security', () => {
     expect(isUnresolvedSecurityStatus('in-progress')).toBe(true)
     expect(isUnresolvedSecurityStatus('mitigated')).toBe(false)
     expect(isUnresolvedSecurityStatus('false-positive')).toBe(false)
+    expect(isUnresolvedSecurityStatus('accepted')).toBe(false)
+  })
+
+  it('securityStatusGroup separates carried risk from closed', () => {
+    expect(securityStatusGroup(undefined)).toBe('unresolved')
+    expect(securityStatusGroup('open')).toBe('unresolved')
+    expect(securityStatusGroup('in-progress')).toBe('unresolved')
+    expect(securityStatusGroup('accepted')).toBe('carried')
+    expect(securityStatusGroup('transferred')).toBe('carried')
+    expect(securityStatusGroup('mitigated')).toBe('closed')
+    expect(securityStatusGroup('resolved')).toBe('closed')
+    expect(securityStatusGroup('false-positive')).toBe('closed')
+    expect(isRiskCarriedSecurityStatus('accepted')).toBe(true)
+    expect(isRiskCarriedSecurityStatus('mitigated')).toBe(false)
   })
 })

@@ -16,9 +16,15 @@ export {
   sortVulnerabilities,
   StatusBadge,
   statusColor,
+  StatusGroupCounts,
   StrideChips,
   StrideSummary,
   ThreatCard,
   VulnerabilityCard,
   VulnerabilitySummary,
 } from './SecurityItems'
+export {
+  type SecurityBadgeSummary,
+  securityBadgeSummary,
+  type SecurityItemsSubject,
+} from './summary'

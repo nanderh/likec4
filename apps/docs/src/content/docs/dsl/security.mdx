@@ -77,6 +77,17 @@ model {
 
 Threats and vulnerabilities without `status` are considered `open`.
 
+Statuses fall into three groups:
+
+| Group        | Statuses                                  | Meaning                                       |
+| ------------ | ----------------------------------------- | --------------------------------------------- |
+| unresolved   | `open`, `in-progress` (or no status)      | still to be addressed                         |
+| risk carried | `accepted`, `transferred`                 | the risk remains, someone owns it             |
+| closed       | `mitigated`, `resolved`, `false-positive` | the risk is gone                              |
+
+Nodes show a badge with the number of unresolved items, colored by the highest severity or risk,
+and a muted second marker when the element has items with carried risk.
+
 ### Data flows
 
 STRIDE-per-interaction threats are defined on relationships:
@@ -107,8 +118,9 @@ It recolors all nodes of every view, similar to label sets in other tools:
 | Vulnerability severity | highest severity of unresolved vulnerabilities                |
 | Threat risk            | highest risk of unresolved threats                            |
 
-Only unresolved items (`open`, `in-progress` or without status) count.
-Elements whose items are all resolved are blue, elements without items are muted.
+The color is the highest severity or risk of the unresolved items (`open`, `in-progress` or without status).
+Elements without unresolved items are purple when some risk is carried (`accepted`, `transferred`),
+blue when all items are closed (`mitigated`, `resolved`, `false-positive`), and muted without items.
 The selected mode is kept while navigating between views (per browser session).
 
 This is a viewer setting and does not change the views. To keep a colored version of a view,

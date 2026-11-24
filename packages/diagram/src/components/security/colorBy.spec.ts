@@ -18,11 +18,35 @@ describe('securityLevel', () => {
     expect(securityLevel(subject, 'security')).toBe('critical')
   })
 
-  it('returns resolved when all items are resolved', () => {
+  it('returns closed when all items are closed', () => {
     expect(securityLevel({
       vulnerabilities: [{ id: 'V1', severity: 'high', status: 'mitigated' }],
-      threats: [],
-    }, 'security')).toBe('resolved')
+      threats: [{ id: 'T1', stride: [], status: 'false-positive' }],
+    }, 'security')).toBe('closed')
+  })
+
+  it('returns carried when only accepted or transferred items remain', () => {
+    // like pki.validationAuthority: a single accepted threat
+    expect(securityLevel({
+      vulnerabilities: [],
+      threats: [{ id: 'VA-01', stride: [], likelihood: 'high', impact: 'high', status: 'accepted' }],
+    }, 'threats')).toBe('carried')
+    expect(securityLevel({
+      vulnerabilities: [{ id: 'V1', severity: 'high', status: 'transferred' }],
+      threats: [{ id: 'T1', stride: [], status: 'mitigated' }],
+    }, 'security')).toBe('carried')
+    expect(securityLevelColor('carried')).toBe('likec4-security-carried')
+  })
+
+  it('unresolved items win over carried items', () => {
+    // like gateway.keyStore: KS-09 accepted, other threats open
+    expect(securityLevel({
+      vulnerabilities: [],
+      threats: [
+        { id: 'KS-09', stride: [], risk: 'critical', status: 'accepted' },
+        { id: 'KS-01', stride: [], risk: 'medium', status: 'open' },
+      ],
+    }, 'threats')).toBe('medium')
   })
 
   it('returns info for unresolved items without rating', () => {

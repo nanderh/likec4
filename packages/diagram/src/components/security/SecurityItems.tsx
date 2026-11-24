@@ -8,8 +8,10 @@ import {
   type Vulnerability,
   compareSeverity,
   highestSeverity,
+  isRiskCarriedSecurityStatus,
   isUnresolvedSecurityStatus,
   RichText,
+  securityStatusGroup,
   StrideCategories,
   StrideLetters,
   StrideProperties,
@@ -54,7 +56,7 @@ export const statusColor = {
   'open': 'red',
   'in-progress': 'blue',
   'mitigated': 'teal',
-  'accepted': 'gray',
+  'accepted': 'grape',
   'transferred': 'violet',
   'resolved': 'green',
   'false-positive': 'gray',
@@ -195,15 +197,20 @@ const card = css({
   display: 'flex',
   flexDirection: 'column',
   gap: 'xs',
-  '&[data-resolved="true"]': {
+  // closed items are dimmed, carried risk stays visible with a marker on the left
+  '&[data-status-group="closed"]': {
     opacity: '0.7',
+  },
+  '&[data-status-group="carried"]': {
+    borderLeftWidth: '[3px]',
+    borderLeftColor: '[var(--mantine-color-grape-5)]',
   },
 })
 
 export function VulnerabilityCard({ vulnerability: v }: { vulnerability: Vulnerability }) {
   const severity = vulnerabilitySeverity(v)
   return (
-    <Paper withBorder p="sm" radius="sm" className={card} data-resolved={!isUnresolvedSecurityStatus(v.status)}>
+    <Paper withBorder p="sm" radius="sm" className={card} data-status-group={securityStatusGroup(v.status)}>
       <HStack justify="space-between" alignItems="start" gap="sm" flexWrap="nowrap">
         <VStack gap="0" alignItems="start" minWidth="0">
           <ItemId id={v.id} links={v.links} />
@@ -235,7 +242,7 @@ export function VulnerabilityCard({ vulnerability: v }: { vulnerability: Vulnera
 export function ThreatCard({ threat: t }: { threat: Threat }) {
   const risk = threatRisk(t)
   return (
-    <Paper withBorder p="sm" radius="sm" className={card} data-resolved={!isUnresolvedSecurityStatus(t.status)}>
+    <Paper withBorder p="sm" radius="sm" className={card} data-status-group={securityStatusGroup(t.status)}>
       <HStack justify="space-between" alignItems="start" gap="sm" flexWrap="nowrap">
         <VStack gap="0" alignItems="start" minWidth="0">
           <ItemId id={t.id} links={t.links} />
@@ -268,10 +275,16 @@ export function ThreatCard({ threat: t }: { threat: Threat }) {
   )
 }
 
-const resolvedRank = (status: SecurityStatus | null | undefined) => isUnresolvedSecurityStatus(status) ? 0 : 1
+const statusGroupRank = {
+  unresolved: 0,
+  carried: 1,
+  closed: 2,
+} as const
+
+const resolvedRank = (status: SecurityStatus | null | undefined) => statusGroupRank[securityStatusGroup(status)]
 
 /**
- * Sorts vulnerabilities: unresolved first, then by severity
+ * Sorts vulnerabilities: unresolved first, then carried risk, then closed; by severity within the group
  */
 export function sortVulnerabilities(vulnerabilities: ReadonlyArray<Vulnerability>): Vulnerability[] {
   return [...vulnerabilities].sort((a, b) =>
@@ -281,7 +294,7 @@ export function sortVulnerabilities(vulnerabilities: ReadonlyArray<Vulnerability
 }
 
 /**
- * Sorts threats: unresolved first, then by risk
+ * Sorts threats: unresolved first, then carried risk, then closed; by risk within the group
  */
 export function sortThreats(threats: ReadonlyArray<Threat>): Threat[] {
   return [...threats].sort((a, b) =>
@@ -302,6 +315,30 @@ const summaryCell = css({
 })
 
 /**
+ * Number of items per status group: "3 unresolved · 1 risk carried · 2 closed"
+ */
+export function StatusGroupCounts({ items }: { items: ReadonlyArray<{ readonly status?: SecurityStatus | null }> }) {
+  const counts = useMemo(() => countBy(items, i => securityStatusGroup(i.status)), [items])
+  return (
+    <HStack gap="xs" flexWrap="wrap">
+      <Text fz="xs" c="dimmed">
+        {counts.unresolved ?? 0} unresolved
+      </Text>
+      {!!counts.carried && (
+        <Tooltip label="Accepted or transferred: the risk remains">
+          <Text fz="xs" c="grape">
+            · {counts.carried} risk carried
+          </Text>
+        </Tooltip>
+      )}
+      <Text fz="xs" c="dimmed">
+        · {counts.closed ?? 0} closed
+      </Text>
+    </HStack>
+  )
+}
+
+/**
  * Overview of threats by STRIDE category
  */
 export function StrideSummary({ threats }: { threats: ReadonlyArray<Threat> }) {
@@ -313,16 +350,36 @@ export function StrideSummary({ threats }: { threats: ReadonlyArray<Threat> }) {
         category,
         total: matching.length,
         unresolved: unresolved.length,
+        carried: matching.filter(t => isRiskCarriedSecurityStatus(t.status)).length,
         risk: highestSeverity(unresolved.map(threatRisk)),
       }
     }), [threats])
 
   return (
+    <VStack gap="xs" alignItems="stretch">
+      <StatusGroupCounts items={threats} />
+      <StrideGrid byCategory={byCategory} />
+    </VStack>
+  )
+}
+
+function StrideGrid({ byCategory }: {
+  byCategory: ReadonlyArray<{
+    category: StrideCategory
+    total: number
+    unresolved: number
+    carried: number
+    risk: SecuritySeverity | null
+  }>
+}) {
+  return (
     <div className={css({ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 'xs' })}>
-      {byCategory.map(({ category, total, unresolved, risk }) => (
+      {byCategory.map(({ category, total, unresolved, carried, risk }) => (
         <Tooltip
           key={category}
-          label={`${StrideTitles[category]}: ${unresolved} unresolved of ${total}`}
+          label={`${StrideTitles[category]}: ${unresolved} unresolved${
+            carried > 0 ? `, ${carried} risk carried` : ''
+          } of ${total}`}
         >
           <div className={summaryCell}>
             <Text fz="lg" fw={700} ff="monospace" lh={1}>{StrideLetters[category]}</Text>
@@ -356,12 +413,9 @@ export function VulnerabilitySummary({ vulnerabilities }: { vulnerabilities: Rea
       vulnerabilities.filter(v => isUnresolvedSecurityStatus(v.status)),
       v => vulnerabilitySeverity(v) ?? 'unknown',
     ), [vulnerabilities])
-  const unresolved = Object.values(counts).reduce((a, b) => a + b, 0)
   return (
     <HStack gap="xs" flexWrap="wrap">
-      <Text fz="xs" c="dimmed">
-        {unresolved} unresolved of {vulnerabilities.length}
-      </Text>
+      <StatusGroupCounts items={vulnerabilities} />
       {(['critical', 'high', 'medium', 'low', 'info'] as const).map(severity =>
         counts[severity]
           ? <SeverityBadge key={severity} severity={severity} label={String(counts[severity])} />
@@ -390,7 +444,7 @@ export function SecurityCompactList({
             key={`t-${t.id}-${i}`}
             gap="xs"
             flexWrap="nowrap"
-            opacity={isUnresolvedSecurityStatus(t.status) ? '1' : '[0.6]'}>
+            opacity={securityStatusGroup(t.status) === 'closed' ? '[0.6]' : '1'}>
             <StrideChips stride={t.stride} />
             <span className={itemId}>{t.id}</span>
             <Text fz="xs" truncate="end" flex={1} miw={0}>{t.title}</Text>
@@ -405,7 +459,7 @@ export function SecurityCompactList({
             key={`v-${v.id}-${i}`}
             gap="xs"
             flexWrap="nowrap"
-            opacity={isUnresolvedSecurityStatus(v.status) ? '1' : '[0.6]'}>
+            opacity={securityStatusGroup(v.status) === 'closed' ? '[0.6]' : '1'}>
             <ItemId id={v.id} links={v.links} />
             <Text fz="xs" truncate="end" flex={1} miw={0}>{v.title}</Text>
             {severity && <SeverityBadge severity={severity} />}

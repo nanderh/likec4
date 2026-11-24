@@ -87,7 +87,7 @@ export function ColorByControl() {
         {active && (
           <>
             <Menu.Divider />
-            <Menu.Label>Legend (unresolved items)</Menu.Label>
+            <Menu.Label>Legend (worst unresolved item)</Menu.Label>
             {SecurityLevels.map(level => (
               <HStack key={level} gap="2" px="3" py="0.5">
                 <span className={swatch} style={{ background: swatchColor(level) }} />

@@ -231,6 +231,39 @@ export function isUnresolvedSecurityStatus(status: SecurityStatus | null | undef
   return !status || status === 'open' || status === 'in-progress'
 }
 
+/**
+ * Groups of {@link SecurityStatus}:
+ * - `unresolved`: still to be addressed (`open`, `in-progress` or not set)
+ * - `carried`: the risk remains, but is owned by someone (`accepted`, `transferred`)
+ * - `closed`: the risk is gone (`mitigated`, `resolved`, `false-positive`)
+ */
+export const SecurityStatusGroups = ['unresolved', 'carried', 'closed'] as const
+export type SecurityStatusGroup = typeof SecurityStatusGroups[number]
+
+/**
+ * Returns the {@link SecurityStatusGroup} of the status
+ */
+export function securityStatusGroup(status: SecurityStatus | null | undefined): SecurityStatusGroup {
+  switch (status) {
+    case 'accepted':
+    case 'transferred':
+      return 'carried'
+    case 'mitigated':
+    case 'resolved':
+    case 'false-positive':
+      return 'closed'
+    default:
+      return 'unresolved'
+  }
+}
+
+/**
+ * Returns true if the risk of the issue remains, but is carried (`accepted` or `transferred`)
+ */
+export function isRiskCarriedSecurityStatus(status: SecurityStatus | null | undefined): boolean {
+  return securityStatusGroup(status) === 'carried'
+}
+
 const severityRank = {
   critical: 5,
   high: 4,
