@@ -2,7 +2,6 @@ import { defineSemanticTokens } from '@pandacss/dev'
 import { defaultMantineColors, mantine } from '../generated.ts'
 import { alpha } from '../helpers.ts'
 import { likec4 } from './semantic-colors.likec4.ts'
-import { radixColors } from './semantic-colors.radix.ts'
 import { subflow } from './semantic-colors.subflow.ts'
 import { surface } from './semantic-colors.surface.ts'
 import { black, dark, gray, orange, value, white, yellow } from './value.ts'
@@ -58,9 +57,9 @@ export const colors = defineSemanticTokens.colors({
       dark: 'rgba(0,0,0,0.88)',
     }),
     warning: value({
-      description: 'Warning text color',
-      value: orange[6],
-      dark: orange[5],
+      description: 'Warning text color · orange leaned toward bright text, ≥4.5:1 on default and washed surfaces',
+      value: `color-mix(in oklab, ${orange[8]} 70%, ${black})`,
+      dark: `color-mix(in oklab, ${orange[8]} 70%, ${white})`,
     }),
   },
 
@@ -199,5 +198,4 @@ export const colors = defineSemanticTokens.colors({
 
   likec4,
   subflow,
-  ...radixColors,
 })

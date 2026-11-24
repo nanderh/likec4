@@ -12,6 +12,7 @@ import type { DiagramEdge, DiagramNode, EdgeId, ViewId } from '@likec4/core/type
 import { css, cx } from '@likec4/styles/css'
 import { Box, HStack, styled, VStack } from '@likec4/styles/jsx'
 import { bleed } from '@likec4/styles/patterns'
+import { token } from '@likec4/styles/tokens'
 import {
   ActionIcon,
   Button,
@@ -36,8 +37,9 @@ import {
   useState,
 } from 'react'
 import { clamp, entries, filter, isEmpty, isTruthy, map, partition, pipe } from 'remeda'
-import { Markdown } from '../../base-primitives'
+import { ElementTag } from '../../base-primitives/element/ElementTags'
 import { Link } from '../../components/Link'
+import { MarkdownWithRefs } from '../../components/markdown'
 import { PortalToContainer } from '../../components/PortalToContainer'
 import { SecurityCompactList } from '../../components/security'
 import { useRootContainerRef } from '../../context'
@@ -413,6 +415,7 @@ const Relationship = forwardRef<
   const sourceId = getEndpointId(r, 'source', sourceNode)
   const targetId = getEndpointId(r, 'target', targetNode)
   const links = r.links
+  const tags = r.tags
   const infoIconRef = useRef<HTMLDivElement>(null)
   const [metadataPortalTarget, setMetadataPortalTarget] = useState<HTMLDialogElement | null>(null)
 
@@ -554,6 +557,7 @@ const Relationship = forwardRef<
             withArrow
             bg="white"
             c="dark"
+            zIndex={token.var('zIndex.tooltip')}
             withinPortal
             portalProps={metadataPortalTarget ? { target: metadataPortalTarget } : {}}
             styles={{
@@ -590,6 +594,14 @@ const Relationship = forwardRef<
           </Text>
         </HStack>
       )}
+      {tags.length > 0 && (
+        <HStack gap="2" alignItems="center">
+          <Label>tags</Label>
+          <HStack gap="1" flexWrap="wrap">
+            {tags.map(tag => <ElementTag key={tag} tag={tag} />)}
+          </HStack>
+        </HStack>
+      )}
       {r.summary.nonEmpty && (
         <>
           <Label>description</Label>
@@ -605,7 +617,7 @@ const Relationship = forwardRef<
               },
             }}
           >
-            <Markdown value={r.summary} fontSize={'sm'} textScale={0.875} />
+            <MarkdownWithRefs value={r.summary} fontSize={'sm'} textScale={0.875} />
           </Box>
         </>
       )}

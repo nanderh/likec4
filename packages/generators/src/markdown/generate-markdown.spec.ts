@@ -2,6 +2,7 @@ import type { LikeC4Model, LikeC4ViewModel } from '@likec4/core/model'
 import type { aux, ProcessedView } from '@likec4/core/types'
 import { test } from 'vitest'
 import { fakeComputedView3Levels, fakeDiagram, fakeDiagram2 } from '../__mocks__/data'
+import { mockModelStyles, withEdgeStyles } from '../__mocks__/view-model'
 import { generateMermaid } from '../mmd/generate-mmd'
 import { generateMarkdown } from './generate-markdown'
 
@@ -18,7 +19,8 @@ const mockView = ({ title, sourcePath, description, $view }: ViewSpec): LikeC4Vi
     description: description
       ? { isEmpty: false, nonEmpty: true, md: description }
       : { isEmpty: true, nonEmpty: false, md: '' },
-    $view: sourcePath !== undefined ? { ...$view, sourcePath } : { ...$view },
+    $view: sourcePath !== undefined ? { ...withEdgeStyles($view), sourcePath } : withEdgeStyles($view),
+    $model: mockModelStyles,
   }) as unknown as LikeC4ViewModel<aux.Unknown>
 
 const mockModel = (views: LikeC4ViewModel<aux.Unknown>[], project = { id: 'default', title: 'Acme Platform' }) =>
@@ -119,4 +121,39 @@ test('Line endings are LF on every platform', ({ expect }) => {
 
 test('Full document snapshot', ({ expect }) => {
   expect(generateMarkdown(model)).toMatchSnapshot()
+})
+
+test('Titles are one-line headings rendered literally', ({ expect }) => {
+  const view = (title: string) => mockView({ title, sourcePath: 'views/a.c4', $view: fakeDiagram })
+  const md = generateMarkdown(
+    mockModel(
+      [view('Release #'), view('Orders\nand payments'), view('Q&A <draft>'), view('*Core* services')],
+      { id: 'default', title: 'Acme\r\nPlatform' },
+    ),
+  )
+  const headings = md.split('\n').filter(line => line.startsWith('#'))
+  expect(headings).toEqual([
+    '# Acme Platform',
+    '### Release \\#',
+    '### Orders and payments',
+    '### Q\\&A \\<draft\\>',
+    '### \\*Core\\* services',
+  ])
+})
+
+test('URL-like titles are not rendered as GFM autolinks', ({ expect }) => {
+  const view = (title: string) => mockView({ title, sourcePath: 'views/a.c4', $view: fakeDiagram })
+  const md = generateMarkdown(
+    mockModel(
+      [view('www.example.com'), view('https://example.com'), view('team@example.com'), view('@mention')],
+      { id: 'default', title: 'Test' },
+    ),
+  )
+  const headings = md.split('\n').filter(line => line.startsWith('###'))
+  expect(headings).toEqual([
+    '### www\\.example.com',
+    '### https\\://example.com',
+    '### team\\@example.com',
+    '### @mention',
+  ])
 })

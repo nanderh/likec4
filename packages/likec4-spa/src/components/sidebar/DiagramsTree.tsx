@@ -6,7 +6,7 @@
 // Portions of this file have been modified by NVIDIA CORPORATION & AFFILIATES.
 
 import type { DiagramView } from '@likec4/core/types'
-import { StaticLikeC4Diagram, useUpdateEffect } from '@likec4/diagram'
+import { pickViewBounds, StaticLikeC4Diagram, useUpdateEffect } from '@likec4/diagram'
 import { Box } from '@likec4/styles/jsx'
 import {
   type TreeNodeData,
@@ -28,8 +28,10 @@ import {
   IconStarFilled,
 } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
-import { type PropsWithChildren, memo, useEffect } from 'react'
-import { useCurrentView, useLikeC4Views } from '../../hooks'
+import { type PropsWithChildren, memo, useEffect, useMemo } from 'react'
+import { useModelDiffs } from '../../context/ModelDiffsContext'
+import { useCurrentProject, useCurrentView, useLikeC4Views } from '../../hooks'
+import { useModelDiffState } from '../model-diff/state'
 import { type GroupBy, isTreeNodeData, useDiagramsTreeData } from './data'
 import { SidebarDrawerOps } from './state'
 
@@ -55,13 +57,43 @@ export const DiagramsTree = /* @__PURE__ */ memo(({ groupBy }: {
 }) => {
   const views = useLikeC4Views()
   const data = useDiagramsTreeData(groupBy)
+  const { diffs } = useModelDiffs()
+  const { diffId } = useModelDiffState()
+  const introduced = useMemo(() => {
+    const summary = diffs.find(diff => diff.id === diffId)
+    const ids = new Set(views.map(view => view.id))
+    return (summary?.views ?? []).filter(view => !ids.has(view.id))
+  }, [diffs, diffId, views])
+  const treeData = useMemo(() => {
+    if (introduced.length === 0) {
+      return data
+    }
+    return [
+      ...data,
+      {
+        value: '@diff-views',
+        label: 'In this diff',
+        type: 'folder' as const,
+        children: introduced.map(view => ({
+          value: view.id,
+          label: view.title ?? view.id,
+          type: 'view' as const,
+        })),
+      },
+    ]
+  }, [data, introduced])
   const navigate = useNavigate()
+  const { id: projectId } = useCurrentProject()
   const navigateTo = (viewId: string) => {
     SidebarDrawerOps.close()
     void navigate({
-      to: '/view/$viewId/',
+      to: '/project/$projectId/view/$viewId/',
       viewTransition: false,
-      params: { viewId },
+      params: { projectId, viewId },
+      search: (prev) => ({
+        ...prev,
+        ...(diffId ? { diff: diffId } : {}),
+      }),
     })
   }
   const [diagram] = useCurrentView()
@@ -101,7 +133,7 @@ export const DiagramsTree = /* @__PURE__ */ memo(({ groupBy }: {
       <Tree
         allowRangeSelection={false}
         tree={tree}
-        data={data}
+        data={treeData}
         styles={{
           node: {
             marginTop: 2,
@@ -155,10 +187,11 @@ export const DiagramsTree = /* @__PURE__ */ memo(({ groupBy }: {
 }, (prev, next) => prev.groupBy === next.groupBy)
 
 function DiagramPreviewHoverCard({ diagram, children }: PropsWithChildren<{ diagram: DiagramView | undefined }>) {
-  const ratio = diagram ? Math.max(diagram.bounds.width / 400, diagram.bounds.height / 300) : 1
+  const bounds = diagram ? pickViewBounds(diagram) : null
+  const ratio = bounds ? Math.max(bounds.width / 400, bounds.height / 300) : 1
 
-  const width = diagram ? Math.round(diagram.bounds.width / ratio) : 0
-  const height = diagram ? Math.round(diagram.bounds.height / ratio) : 0
+  const width = bounds ? Math.round(bounds.width / ratio) : 0
+  const height = bounds ? Math.round(bounds.height / ratio) : 0
 
   return (
     <>
@@ -180,10 +213,12 @@ function DiagramPreviewHoverCard({ diagram, children }: PropsWithChildren<{ diag
 const DiagramPreview = memo<{
   diagram: DiagramView
 }>(({ diagram }) => {
-  const ratio = Math.max(diagram.bounds.width / 400, diagram.bounds.height / 300)
+  // Sequence views are laid out differently, use the bounds of the variant that is rendered
+  const bounds = pickViewBounds(diagram)
+  const ratio = Math.max(bounds.width / 400, bounds.height / 300)
 
-  const width = Math.round(diagram.bounds.width / ratio)
-  const height = Math.round(diagram.bounds.height / ratio)
+  const width = Math.round(bounds.width / ratio)
+  const height = Math.round(bounds.height / ratio)
 
   return (
     <StaticLikeC4Diagram

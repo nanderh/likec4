@@ -8,7 +8,6 @@ import {
   centerOnNodeOrEdge,
   closeAllOverlays,
   collapseOrExpandSequenceFlow,
-  disableCompareWithLatest,
   emitEdgeClick,
   emitNodeClick,
   emitOpenSource,
@@ -22,6 +21,8 @@ import {
   handleNavigate,
   highlightNodeOrEdge,
   layoutAlign,
+  layoutDistribute,
+  layoutResize,
   notationsHighlight,
   onEdgeDoubleClick,
   onEdgeMouseEnter,
@@ -32,6 +33,8 @@ import {
   raiseFitDiagram,
   resetEdgesControlPoints,
   resetLastClickedNode,
+  selectedNodesWithoutDescendants,
+  selectNodesAndEdges,
   setViewport,
   startEditing,
   stopEditing,
@@ -42,6 +45,7 @@ import {
   updateView,
 } from './machine.actions'
 import { machine, to } from './machine.setup'
+import { comparing } from './machine.state.ready.comparing'
 import { focused } from './machine.state.ready.focused'
 import { idle } from './machine.state.ready.idle'
 import { printing } from './machine.state.ready.printing'
@@ -71,13 +75,39 @@ export const ready = machine.createStateConfig({
     focused,
     walkthrough,
     printing,
+    comparing,
   },
   on: {
     'layout.align': {
-      guard: 'not readonly',
+      guard: and([
+        'not readonly',
+        ({ context }) => selectedNodesWithoutDescendants(context.xystore).length >= 2,
+      ]),
       actions: [
         startEditing('node'),
         layoutAlign(),
+        stopEditing(true),
+      ],
+    },
+    'layout.distribute': {
+      guard: and([
+        'not readonly',
+        ({ context }) => selectedNodesWithoutDescendants(context.xystore).length >= 3,
+      ]),
+      actions: [
+        startEditing('node'),
+        layoutDistribute(),
+        stopEditing(true),
+      ],
+    },
+    'layout.resize': {
+      guard: and([
+        'not readonly',
+        ({ context }) => selectedNodesWithoutDescendants(context.xystore).length >= 2,
+      ]),
+      actions: [
+        startEditing('node'),
+        layoutResize(),
         stopEditing(true),
       ],
     },
@@ -93,7 +123,6 @@ export const ready = machine.createStateConfig({
       guard: 'enabled: Editor',
       actions: [
         cancelEditing(),
-        disableCompareWithLatest(),
         assign({
           viewportChangedManually: false,
         }),
@@ -237,34 +266,7 @@ export const ready = machine.createStateConfig({
       },
     },
     'xyflow.select': {
-      actions: assign(({ context, event }) => ({
-        xynodes: context.xynodes.map(node => {
-          let selected = false
-          if (event.nodes && event.nodes.length > 0) {
-            selected = event.nodes.includes(node.data.id)
-          }
-          if (selected !== (node.selected ?? false)) {
-            return {
-              ...node,
-              selected,
-            }
-          }
-          return node
-        }),
-        xyedges: context.xyedges.map(edge => {
-          let selected = false
-          if (event.edges && event.edges.length > 0) {
-            selected = event.edges.includes(edge.data.id)
-          }
-          if (selected !== (edge.selected ?? false)) {
-            return {
-              ...edge,
-              selected,
-            }
-          }
-          return edge
-        }),
-      })),
+      actions: selectNodesAndEdges(),
     },
     'xyflow.paneDblClick': {
       actions: [
