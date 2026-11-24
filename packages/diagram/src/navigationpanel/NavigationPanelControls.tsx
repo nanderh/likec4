@@ -14,6 +14,7 @@ import {
   NavigationButtons,
   OpenSource,
   SearchControl,
+  ThreatRegisterButton,
   ToggleReadonly,
   ViewDetailsButton,
 } from './controls'
@@ -110,6 +111,7 @@ export const NavigationPanelControls = memo(() => {
             disabled={isComparing || isEditing} />
         )}
         {hasModel && <ColorByControl key="color-by" />}
+        {hasModel && <ThreatRegisterButton key="threat-register" onOpen={() => actor.closeDropdown()} />}
         {enableSearch && !isComparing && <SearchControl key="search-control" />}
         <LayoutWarning key="outdated-manual-layout-warning" />
       </m.div>

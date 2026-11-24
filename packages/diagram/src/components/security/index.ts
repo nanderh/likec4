@@ -9,6 +9,18 @@ export {
   SecurityPalette,
 } from './colorBy'
 export {
+  buildSecurityRegister,
+  filterRegister,
+  type RegisterColumn,
+  type RegisterFilters,
+  type RegisterOwner,
+  type RegisterRow,
+  type RegisterSort,
+  registerToCsv,
+  type SecurityItemKind,
+  sortRegister,
+} from './register'
+export {
   SecurityCompactList,
   SeverityBadge,
   severityColor,
