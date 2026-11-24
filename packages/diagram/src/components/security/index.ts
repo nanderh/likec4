@@ -1,6 +1,9 @@
 export {
   type ColorByMode,
   ColorByModes,
+  type RiskScoreLevel,
+  riskScoreLevel,
+  RiskScoreOtherLevels,
   type SecurityLevel,
   securityLevel,
   securityLevelColor,

@@ -198,6 +198,35 @@ export function threatRisk(threat: Pick<Threat, 'likelihood' | 'impact' | 'risk'
 }
 
 /**
+ * Possible values of {@link threatRiskScore}: likelihood × impact on a 4 × 4 matrix
+ */
+export const RiskScores = [1, 2, 3, 4, 6, 8, 9, 12, 16] as const
+export type RiskScore = typeof RiskScores[number]
+
+/**
+ * Cell of the risk matrix: likelihood × impact (1 - 16)
+ */
+export function riskScore(likelihood: RiskLevel, impact: RiskLevel): RiskScore {
+  // product of two values 1 - 4 is always one of RiskScores
+  return (levelScore[likelihood] * levelScore[impact]) as RiskScore
+}
+
+/**
+ * Risk score of the threat: likelihood × impact (1 - 16).
+ * If likelihood or impact is missing, the score of the risk level is used
+ * (the level times itself: low 1, medium 4, high 9, critical 16), see {@link threatRisk}.
+ * Returns null if the threat is not rated.
+ */
+export function threatRiskScore(threat: Pick<Threat, 'likelihood' | 'impact' | 'risk'>): RiskScore | null {
+  const { likelihood, impact } = threat
+  if (likelihood && impact) {
+    return riskScore(likelihood, impact)
+  }
+  const risk = threatRisk(threat)
+  return risk ? riskScore(risk, risk) : null
+}
+
+/**
  * Converts CVSS base score to qualitative severity rating (CVSS v3)
  */
 export function cvssToSeverity(score: number): SecuritySeverity {

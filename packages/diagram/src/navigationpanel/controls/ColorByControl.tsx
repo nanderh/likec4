@@ -1,10 +1,13 @@
+import { type RiskLevel, riskScore } from '@likec4/core/types'
 import { css } from '@likec4/styles/css'
 import { HStack } from '@likec4/styles/jsx'
-import { Menu, Text } from '@mantine/core'
+import { Box, Menu, Text } from '@mantine/core'
 import { IconCheck, IconPalette } from '@tabler/icons-react'
 import {
   type ColorByMode,
   type SecurityLevel,
+  riskScoreLevel,
+  RiskScoreOtherLevels,
   securityLevelLabels,
   SecurityLevels,
   SecurityPalette,
@@ -18,6 +21,7 @@ const modes = [
   { value: 'security', label: 'Highest risk (all)' },
   { value: 'vulnerabilities', label: 'Vulnerability severity' },
   { value: 'threats', label: 'Threat risk' },
+  { value: 'risk-score', label: 'Risk score (likelihood × impact)' },
 ] as const satisfies ReadonlyArray<{ value: ColorByMode; label: string }>
 
 const swatch = css({
@@ -30,6 +34,75 @@ const swatch = css({
 
 function swatchColor(level: SecurityLevel): string {
   return level === 'none' ? 'var(--mantine-color-gray-5)' : SecurityPalette[`likec4-security-${level}`]
+}
+
+const matrix = css({
+  display: 'grid',
+  gridTemplateColumns: 'max-content repeat(4, 24px)',
+  justifyContent: 'start',
+  gap: '[2px]',
+  alignItems: 'center',
+  fontSize: '[10px]',
+  lineHeight: '1',
+})
+
+const matrixCell = css({
+  height: '[18px]',
+  borderRadius: '[2px]',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'semibold',
+  color: 'white',
+})
+
+const matrixLabel = css({
+  color: 'text.dimmed',
+  textAlign: 'center',
+})
+
+// rows from high to low likelihood, columns from low to high impact
+const likelihoodRows = ['critical', 'high', 'medium', 'low'] as const satisfies ReadonlyArray<RiskLevel>
+const impactColumns = ['low', 'medium', 'high', 'critical'] as const satisfies ReadonlyArray<RiskLevel>
+const shortLevel = { low: 'low', medium: 'med', high: 'high', critical: 'crit' } as const satisfies Record<
+  RiskLevel,
+  string
+>
+
+/**
+ * Risk matrix: likelihood × impact, each cell in the color of its score
+ */
+function RiskMatrixLegend() {
+  return (
+    <Box px="3" py="1">
+      <div className={matrix} role="table" aria-label="Risk matrix: likelihood by impact">
+        {likelihoodRows.map(likelihood => (
+          <div key={likelihood} role="row" style={{ display: 'contents' }}>
+            <Text fz={10} c="dimmed" pr={4} role="rowheader">{likelihood}</Text>
+            {impactColumns.map(impact => {
+              const score = riskScore(likelihood, impact)
+              return (
+                <div
+                  key={impact}
+                  role="cell"
+                  className={matrixCell}
+                  style={{ background: swatchColor(riskScoreLevel(score)) }}
+                  title={`likelihood ${likelihood} × impact ${impact} = ${score}`}>
+                  {score}
+                </div>
+              )
+            })}
+          </div>
+        ))}
+        <span />
+        {impactColumns.map(impact => <span key={impact} className={matrixLabel}>{shortLevel[impact]}</span>)}
+      </div>
+      <Text fz={10} c="dimmed" mt={4} maw={200}>
+        rows: likelihood, columns: impact. Threats without both use their risk level (low 1, medium 4, high 9, critical
+        16).
+      </Text>
+    </Box>
+  )
 }
 
 const selectColorBy = selectDiagramContext(c => c.colorBy)
@@ -87,8 +160,11 @@ export function ColorByControl() {
         {active && (
           <>
             <Menu.Divider />
-            <Menu.Label>Legend (worst unresolved item)</Menu.Label>
-            {SecurityLevels.map(level => (
+            <Menu.Label>
+              {colorBy === 'risk-score' ? 'Legend (highest unresolved threat)' : 'Legend (worst unresolved item)'}
+            </Menu.Label>
+            {colorBy === 'risk-score' && <RiskMatrixLegend />}
+            {(colorBy === 'risk-score' ? RiskScoreOtherLevels : SecurityLevels).map(level => (
               <HStack key={level} gap="2" px="3" py="0.5">
                 <span className={swatch} style={{ background: swatchColor(level) }} />
                 <Text fz="xs">{securityLevelLabels[level]}</Text>

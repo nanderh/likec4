@@ -14,6 +14,8 @@ Node badges, _Color by_ and element details of a parent element include the thre
 
 Validation warns when the same threat or vulnerability id is defined on more than one element or relationship, or again in an `extend` of the same element. The warning for a relationship `extend` that matches no relationship lists the nearest relationships.
 
+_Color by_ has a _Risk score_ mode: the highest likelihood × impact (1 - 16) of the unresolved threats, with the risk matrix in the legend.
+
 Accepted and transferred items count as _risk carried_, not as resolved: _Color by_ shows elements with only carried risk in their own color, and node badges show a second, muted marker for them.
 
 Note: `threat` and `vulnerability` are now keywords and can no longer be used as element names or kinds.

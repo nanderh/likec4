@@ -5,8 +5,10 @@ import {
   isRiskCarriedSecurityStatus,
   isUnresolvedSecurityStatus,
   parseStrideCategory,
+  RiskScores,
   securityStatusGroup,
   threatRisk,
+  threatRiskScore,
   vulnerabilitySeverity,
 } from './model-security'
 
@@ -63,6 +65,26 @@ describe('model-security', () => {
     expect(isUnresolvedSecurityStatus('mitigated')).toBe(false)
     expect(isUnresolvedSecurityStatus('false-positive')).toBe(false)
     expect(isUnresolvedSecurityStatus('accepted')).toBe(false)
+  })
+
+  it('threatRiskScore multiplies likelihood and impact', () => {
+    expect(threatRiskScore({ likelihood: 'low', impact: 'low' })).toBe(1)
+    expect(threatRiskScore({ likelihood: 'medium', impact: 'high' })).toBe(6)
+    expect(threatRiskScore({ likelihood: 'low', impact: 'critical' })).toBe(4)
+    expect(threatRiskScore({ likelihood: 'critical', impact: 'critical' })).toBe(16)
+    // likelihood x impact wins over an explicit risk level
+    expect(threatRiskScore({ likelihood: 'high', impact: 'high', risk: 'low' })).toBe(9)
+  })
+
+  it('threatRiskScore falls back to the risk level', () => {
+    expect(threatRiskScore({ risk: 'high' })).toBe(9)
+    expect(threatRiskScore({ impact: 'medium' })).toBe(4)
+    expect(threatRiskScore({})).toBeNull()
+    for (const l of ['low', 'medium', 'high', 'critical'] as const) {
+      for (const i of ['low', 'medium', 'high', 'critical'] as const) {
+        expect(RiskScores).toContain(threatRiskScore({ likelihood: l, impact: i }))
+      }
+    }
   })
 
   it('securityStatusGroup separates carried risk from closed', () => {

@@ -53,6 +53,37 @@ describe('securityLevel', () => {
     expect(securityLevel({ vulnerabilities: [], threats: [{ id: 'T1', stride: [] }] }, 'threats')).toBe('info')
   })
 
+  it('risk-score uses the highest likelihood x impact of unresolved threats', () => {
+    const threats = [
+      { id: 'T1', stride: [], likelihood: 'medium', impact: 'high', status: 'open' },
+      { id: 'T2', stride: [], likelihood: 'high', impact: 'high', status: 'in-progress' },
+      { id: 'T3', stride: [], likelihood: 'critical', impact: 'critical', status: 'mitigated' },
+    ] as const
+    expect(securityLevel({ vulnerabilities: [], threats }, 'risk-score')).toBe('score-9')
+    expect(securityLevelColor('score-9')).toBe('likec4-security-score-9')
+    // the same threats are all "critical" by risk level
+    expect(securityLevel({ vulnerabilities: [], threats: threats.slice(1) }, 'threats')).toBe('critical')
+  })
+
+  it('risk-score ignores vulnerabilities and falls back for unrated threats', () => {
+    expect(securityLevel({
+      vulnerabilities: [{ id: 'V1', severity: 'critical' }],
+      threats: [],
+    }, 'risk-score')).toBe('none')
+    expect(securityLevel({
+      vulnerabilities: [],
+      threats: [{ id: 'T1', stride: [] }],
+    }, 'risk-score')).toBe('info')
+    expect(securityLevel({
+      vulnerabilities: [],
+      threats: [{ id: 'T1', stride: [], risk: 'medium' }],
+    }, 'risk-score')).toBe('score-4')
+    expect(securityLevel({
+      vulnerabilities: [],
+      threats: [{ id: 'T1', stride: [], likelihood: 'high', impact: 'high', status: 'accepted' }],
+    }, 'risk-score')).toBe('carried')
+  })
+
   it('returns none without items', () => {
     expect(securityLevel(subject, 'threats')).not.toBe('none')
     expect(securityLevel({ vulnerabilities: [], threats: [] }, 'security')).toBe('none')

@@ -142,10 +142,16 @@ It recolors all nodes of every view, similar to label sets in other tools:
 | Highest risk (all)     | highest of vulnerability severity and threat risk             |
 | Vulnerability severity | highest severity of unresolved vulnerabilities                |
 | Threat risk            | highest risk of unresolved threats                            |
+| Risk score             | highest likelihood × impact of unresolved threats (1 - 16)    |
 
 The color is the highest severity or risk of the unresolved items (`open`, `in-progress` or without status).
 Elements without unresolved items are purple when some risk is carried (`accepted`, `transferred`),
 blue when all items are closed (`mitigated`, `resolved`, `false-positive`), and muted without items.
+_Risk score_ gives more variation when most threats have the same risk level: it colors by the cell of the
+4 × 4 risk matrix (likelihood × impact, 1 to 16), and the legend shows the matrix. Threats without
+both likelihood and impact use their risk level (low 1, medium 4, high 9, critical 16).
+Vulnerabilities are not part of this mode.
+
 The selected mode is kept while navigating between views (per browser session).
 
 This is a viewer setting and does not change the views. To keep a colored version of a view,
