@@ -21,6 +21,14 @@ export {
   sortRegister,
 } from './register'
 export {
+  type ElementSecurityScope,
+  elementSecurityScope,
+  inheritedSecurityItems,
+  rolledUpSecurityItems,
+  type SecurityItemsOfElement,
+  type SecurityItemsOfRelationship,
+} from './rollup'
+export {
   SecurityCompactList,
   SeverityBadge,
   severityColor,

@@ -88,6 +88,13 @@ Statuses fall into three groups:
 Nodes show a badge with the number of unresolved items, colored by the highest severity or risk,
 and a muted second marker when the element has items with carried risk.
 
+### Parent elements
+
+Badges and _Color by_ of an element include everything inside it: its own items, the items of its
+descendants, and of relationships between its descendants. A collapsed parent, like `gateway`
+in a landscape view, shows the risk of its children. The tooltip of the badge separates own items
+from items inherited from children.
+
 ### Data flows
 
 STRIDE-per-interaction threats are defined on relationships:
@@ -103,8 +110,8 @@ model {
 }
 ```
 
-The _Threats_ tab of an element lists its own threats and the threats of its direct relationships,
-with a STRIDE summary on top.
+The _Threats_ tab of an element lists its own threats, the threats of its direct relationships,
+and, in a separate section, the threats inherited from its children, with a STRIDE summary on top.
 
 ## Threat register
 

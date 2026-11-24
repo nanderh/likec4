@@ -5,7 +5,12 @@ import { Badge, Tooltip } from '@mantine/core'
 import { IconShieldExclamation, IconShieldHalfFilled } from '@tabler/icons-react'
 import type { MouseEvent, PointerEvent } from 'react'
 import { useMemo } from 'react'
-import { type SecurityBadgeSummary, securityBadgeSummary, severityColor } from '../../../components/security'
+import {
+  type SecurityBadgeSummary,
+  rolledUpSecurityItems,
+  securityBadgeSummary,
+  severityColor,
+} from '../../../components/security'
 import { useDiagram } from '../../../hooks/useDiagram'
 import { useOptionalLikeC4Model } from '../../../hooks/useLikeC4Model'
 import { DEPLOYMENT_DETAILS_TAB_KEY, ELEMENT_DETAILS_TAB_KEY } from '../../../overlays/element-details/subject'
@@ -38,17 +43,29 @@ const badge = css({
 
 const stop = (e: PointerEvent | MouseEvent) => e.stopPropagation()
 
-function unresolvedLabel(summary: SecurityBadgeSummary) {
+/**
+ * "3 unresolved threats (1 own, 2 from children)"
+ */
+function countLabel(total: number, own: number, singular: string, plural: string) {
+  const what = `${total} ${total === 1 ? singular : plural}`
+  return own === total ? what : `${what} (${own} own, ${total - own} from children)`
+}
+
+function unresolvedLabel(summary: SecurityBadgeSummary, own: SecurityBadgeSummary | null) {
   const { vulnerabilities, threats } = summary
   return [
-    vulnerabilities > 0 &&
-    `${vulnerabilities} unresolved ${vulnerabilities === 1 ? 'vulnerability' : 'vulnerabilities'}`,
-    threats > 0 && `${threats} unresolved ${threats === 1 ? 'threat' : 'threats'}`,
+    vulnerabilities > 0 && countLabel(
+      vulnerabilities,
+      own?.vulnerabilities ?? 0,
+      'unresolved vulnerability',
+      'unresolved vulnerabilities',
+    ),
+    threats > 0 && countLabel(threats, own?.threats ?? 0, 'unresolved threat', 'unresolved threats'),
   ].filter(Boolean).join(', ')
 }
 
 /**
- * Shows the number of unresolved threats and vulnerabilities of the element,
+ * Shows the number of unresolved threats and vulnerabilities of the element and everything inside it,
  * and a muted marker when some risk is carried (accepted or transferred).
  * Click opens element details on the corresponding tab.
  */
@@ -59,7 +76,13 @@ export function NodeSecurity(
   const model = useOptionalLikeC4Model()
   const element = data.modelFqn ? model?.findElement(data.modelFqn) : null
 
-  const summary = useMemo(() => element?.hasSecurity() ? securityBadgeSummary(element) : null, [element])
+  const [summary, own] = useMemo(() => {
+    if (!element) {
+      return [null, null]
+    }
+    const rolledUp = securityBadgeSummary(rolledUpSecurityItems(element))
+    return [rolledUp, rolledUp && element.hasSecurity() ? securityBadgeSummary(element) : null]
+  }, [element])
 
   if (!summary) {
     return null
@@ -83,7 +106,7 @@ export function NodeSecurity(
   return (
     <div className={container} onPointerDown={stop} onDoubleClick={stop}>
       {unresolved > 0 && (
-        <Tooltip label={unresolvedLabel(summary)} fz="xs" color="dark" withinPortal={false} openDelay={300}>
+        <Tooltip label={unresolvedLabel(summary, own)} fz="xs" color="dark" withinPortal={false} openDelay={300}>
           <Badge
             className={badge}
             size="sm"
@@ -100,7 +123,12 @@ export function NodeSecurity(
       )}
       {summary.carried > 0 && (
         <Tooltip
-          label={`${summary.carried} with risk carried (accepted or transferred)`}
+          label={countLabel(
+            summary.carried,
+            own?.carried ?? 0,
+            'item with risk carried',
+            'items with risk carried',
+          ) + ' (accepted or transferred)'}
           fz="xs"
           color="dark"
           withinPortal={false}

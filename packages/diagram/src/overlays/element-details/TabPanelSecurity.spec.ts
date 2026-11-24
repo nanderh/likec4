@@ -38,15 +38,15 @@ describe('securityItemCounts', () => {
     ),
   })
 
-  it('counts items of the element and its direct relationships (as listed in the tabs)', () => {
+  it('counts items of the element, its direct relationships and its children (as listed in the tabs)', () => {
     expect(securityItemCounts(withThreats.element('gateway'))).toEqual({
-      // own GW-01, GW-02 + gateway -> pki + meter -> gateway
-      threats: 4,
+      // own GW-01, GW-02 + gateway -> pki + meter -> gateway + inherited KS-01
+      threats: 5,
       vulnerabilities: 2,
     })
   })
 
-  it('does not count relationships of nested elements', () => {
+  it('does not count relationships of nested elements to outside', () => {
     expect(securityItemCounts(withThreats.element('gateway.keyStore'))).toEqual({
       threats: 2,
       vulnerabilities: 1,
