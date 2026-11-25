@@ -210,7 +210,7 @@ describe('LikeC4ModelBuilder - vulnerabilities and threats', () => {
         system gateway {
           threat GW-01 'Firmware drift' {
             stride T
-            source 'Attestation', 'Mitre EMB3D Mitigation Coverage', 'Attestation'
+            source 'Pentest report', 'Architecture review', 'Pentest report'
           }
           vulnerability V-1 {
             source 'Pentest 2026'
@@ -226,7 +226,7 @@ describe('LikeC4ModelBuilder - vulnerabilities and threats', () => {
     expect(warnings).toEqual([])
     const gateway = (await buildLikeC4Model()).element('gateway')
     expect(gateway.threats.map(t => t.source)).toEqual([
-      ['Attestation', 'Mitre EMB3D Mitigation Coverage'],
+      ['Pentest report', 'Architecture review'],
       undefined,
     ])
     expect(gateway.vulnerabilities[0]!.source).toEqual(['Pentest 2026'])

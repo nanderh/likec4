@@ -52,14 +52,14 @@ unless the vulnerability has its own links.
 ```likec4
 model {
   gateway = system 'Gateway' {
-    keyStore = store 'Key Store' {
-      threat KS-T1 'Extraction of device private keys' {
+    vault = store 'Vault' {
+      threat SV-T1 'Extraction of device private keys' {
         stride information-disclosure, spoofing
         likelihood low
         impact critical
         status mitigated
         mitigation '''
-          Keys never leave the **TEE**
+          Keys never leave the **HSM**
         '''
       }
     }
@@ -188,8 +188,8 @@ Use [`extend`](/dsl/extend/) to keep the threat model in separate files, next to
 ```likec4
 // threats.c4
 model {
-  extend gateway.keyStore {
-    threat KS-T2 'Unauthorised PKCS#11 operations' {
+  extend gateway.vault {
+    threat SV-T2 'Unauthorised use of signing keys' {
       stride elevation-of-privilege
       likelihood medium
       impact high

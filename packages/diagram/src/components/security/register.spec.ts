@@ -14,7 +14,7 @@ function testModel() {
     .model(({ system, component, rel }, _) =>
       _(
         system('gateway').with(
-          component('keyStore'),
+          component('vault'),
         ),
         system('pki'),
         rel('gateway', 'pki', 'CMP'),
@@ -27,19 +27,19 @@ function testModel() {
     ...data,
     elements: {
       ...data.elements,
-      ['gateway.keyStore']: {
-        ...data.elements['gateway.keyStore']!,
+      ['gateway.vault']: {
+        ...data.elements['gateway.vault']!,
         threats: [
           {
-            id: 'KS-01',
+            id: 'SV-01',
             title: 'Key extraction',
             stride: ['information-disclosure', 'spoofing'],
             likelihood: 'low',
             impact: 'critical',
             status: 'open',
-            source: ['Fuse Programming', 'Questions'],
+            source: ['Design review', 'Workshop notes'],
           },
-          { id: 'KS-09', title: 'Key material, "persisted"', stride: ['tampering'], risk: 'high', status: 'accepted' },
+          { id: 'SV-09', title: 'Key material, "persisted"', stride: ['tampering'], risk: 'high', status: 'accepted' },
         ],
       },
       pki: {
@@ -66,10 +66,10 @@ describe('security register', () => {
 
   it('collects items of elements and relationships', () => {
     expect(rows).toHaveLength(4)
-    const ks01 = rows.find(r => r.id === 'KS-01')!
+    const ks01 = rows.find(r => r.id === 'SV-01')!
     expect(ks01).toMatchObject({
       kind: 'threat',
-      owner: { type: 'element', fqn: 'gateway.keyStore' },
+      owner: { type: 'element', fqn: 'gateway.vault' },
       risk: 'medium',
       status: 'open',
       statusGroup: 'unresolved',
@@ -84,21 +84,21 @@ describe('security register', () => {
       risk: 'critical',
       stride: [],
     })
-    expect(rows.find(r => r.id === 'KS-09')?.statusGroup).toBe('carried')
+    expect(rows.find(r => r.id === 'SV-09')?.statusGroup).toBe('carried')
   })
 
   it('sorts by risk, high first when descending, empty last', () => {
     expect(ids(sortRegister(rows, { column: 'risk', direction: 'desc' }))).toEqual([
       'CVE-2024-3094',
-      'KS-09',
+      'SV-09',
       'DF-01',
-      'KS-01',
+      'SV-01',
     ])
     expect(ids(sortRegister(rows, { column: 'id', direction: 'asc' }))).toEqual([
       'CVE-2024-3094',
       'DF-01',
-      'KS-01',
-      'KS-09',
+      'SV-01',
+      'SV-09',
     ])
   })
 
@@ -112,13 +112,13 @@ describe('security register', () => {
   })
 
   it('filters by text and by values', () => {
-    expect(ids(filterRegister(rows, { owner: 'keystore' }))).toEqual(['KS-01', 'KS-09'])
-    expect(ids(filterRegister(rows, { stride: ['spoofing', 'denial-of-service'] }))).toEqual(['KS-01', 'DF-01'])
+    expect(ids(filterRegister(rows, { owner: 'vault' }))).toEqual(['SV-01', 'SV-09'])
+    expect(ids(filterRegister(rows, { stride: ['spoofing', 'denial-of-service'] }))).toEqual(['SV-01', 'DF-01'])
     expect(ids(filterRegister(rows, { kind: ['vulnerability'] }))).toEqual(['CVE-2024-3094'])
-    expect(ids(filterRegister(rows, { likelihood: ['none'] }))).toEqual(['KS-09', 'CVE-2024-3094'])
-    expect(ids(filterRegister(rows, { status: ['accepted'], title: 'key' }))).toEqual(['KS-09'])
+    expect(ids(filterRegister(rows, { likelihood: ['none'] }))).toEqual(['SV-09', 'CVE-2024-3094'])
+    expect(ids(filterRegister(rows, { status: ['accepted'], title: 'key' }))).toEqual(['SV-09'])
     expect(filterRegister(rows, { status: [] })).toHaveLength(4)
-    expect(ids(filterRegister(rows, { source: 'question' }))).toEqual(['KS-01'])
+    expect(ids(filterRegister(rows, { source: 'workshop' }))).toEqual(['SV-01'])
   })
 
   it('exports CSV with quoting', () => {
@@ -126,10 +126,10 @@ describe('security register', () => {
     const lines = csv.trimEnd().split('\r\n')
     expect(lines[0]).toBe('type,id,title,owner type,owner,stride,likelihood,impact,risk,status,source')
     expect(lines).toContain(
-      'threat,KS-01,Key extraction,element,gateway.keyStore,information-disclosure spoofing,low,critical,medium,open,Fuse Programming; Questions',
+      'threat,SV-01,Key extraction,element,gateway.vault,information-disclosure spoofing,low,critical,medium,open,Design review; Workshop notes',
     )
     expect(lines).toContain(
-      'threat,KS-09,"Key material, ""persisted""",element,gateway.keyStore,tampering,,,high,accepted,',
+      'threat,SV-09,"Key material, ""persisted""",element,gateway.vault,tampering,,,high,accepted,',
     )
     expect(lines).toContain(
       'threat,DF-01,DoS on CMP,relationship,gateway -> pki,denial-of-service,medium,medium,medium,open,',

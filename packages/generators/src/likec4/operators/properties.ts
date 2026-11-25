@@ -194,7 +194,7 @@ type VulnerabilityData = z.output<typeof common.vulnerability>
 type ThreatData = z.output<typeof common.threat>
 
 /**
- * source 'Fuse Programming', 'Questions'
+ * source 'Design review', 'Workshop notes'
  */
 function securitySourceProperty<A extends { source?: ReadonlyArray<string> | null | undefined }>(): Op<A> {
   return select(

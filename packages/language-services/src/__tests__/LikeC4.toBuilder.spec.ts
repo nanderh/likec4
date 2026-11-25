@@ -275,7 +275,7 @@ describe('LikeC4.toBuilder / toDSL / writeDSL', () => {
             likelihood medium
             impact high
             mitigation 'Mutual TLS'
-            source 'Attestation', 'Questions, part 2', "Owner's notes"
+            source 'Pentest report', 'Workshop, part 2', "Owner's notes"
           }
         }
         pki = system
@@ -297,8 +297,8 @@ describe('LikeC4.toBuilder / toDSL / writeDSL', () => {
     expect(reloadedModel.element('gw').vulnerabilities).toEqual(original.element('gw').vulnerabilities)
     expect(reloadedModel.element('gw').threats).toEqual(original.element('gw').threats)
     expect(reloadedModel.element('gw').threats[0]!.source).toEqual([
-      'Attestation',
-      'Questions, part 2',
+      'Pentest report',
+      'Workshop, part 2',
       `Owner's notes`,
     ])
     expect(reloadedModel.element('gw').vulnerabilities[0]!.source).toEqual(['Pentest report'])

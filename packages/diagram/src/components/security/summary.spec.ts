@@ -3,14 +3,14 @@ import { securityBadgeSummary } from './summary'
 
 describe('securityBadgeSummary', () => {
   it('counts unresolved items and carried risk separately', () => {
-    // like gateway.keyStore: KS-09 accepted, other threats open
+    // like gateway.vault: SV-09 accepted, other threats open
     expect(securityBadgeSummary({
       vulnerabilities: [],
       threats: [
-        { id: 'KS-01', stride: [], risk: 'high', status: 'open' },
-        { id: 'KS-02', stride: [], risk: 'medium', status: 'in-progress' },
-        { id: 'KS-09', stride: [], risk: 'critical', status: 'accepted' },
-        { id: 'KS-10', stride: [], risk: 'critical', status: 'mitigated' },
+        { id: 'SV-01', stride: [], risk: 'high', status: 'open' },
+        { id: 'SV-02', stride: [], risk: 'medium', status: 'in-progress' },
+        { id: 'SV-09', stride: [], risk: 'critical', status: 'accepted' },
+        { id: 'SV-10', stride: [], risk: 'critical', status: 'mitigated' },
       ],
     })).toEqual({
       threats: 2,

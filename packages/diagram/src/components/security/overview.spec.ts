@@ -18,7 +18,7 @@ function testModel() {
     .model(({ system, component, rel }, _) =>
       _(
         system('gateway').with(
-          component('keyStore'),
+          component('vault'),
         ),
         system('pki'),
         rel('gateway', 'pki', 'CMP'),
@@ -36,14 +36,14 @@ function testModel() {
     ...data,
     elements: {
       ...data.elements,
-      ['gateway.keyStore']: {
-        ...data.elements['gateway.keyStore']!,
+      ['gateway.vault']: {
+        ...data.elements['gateway.vault']!,
         threats: [
-          { id: 'KS-01', stride: ['information-disclosure', 'spoofing'], likelihood: 'low', impact: 'critical' },
-          { id: 'KS-02', stride: ['tampering'], likelihood: 'low', impact: 'critical', status: 'in-progress' },
-          { id: 'KS-09', stride: ['tampering'], risk: 'high', status: 'accepted' },
-          { id: 'KS-10', stride: ['tampering'], likelihood: 'high', impact: 'high', status: 'mitigated' },
-          { id: 'KS-11', stride: [] },
+          { id: 'SV-01', stride: ['information-disclosure', 'spoofing'], likelihood: 'low', impact: 'critical' },
+          { id: 'SV-02', stride: ['tampering'], likelihood: 'low', impact: 'critical', status: 'in-progress' },
+          { id: 'SV-09', stride: ['tampering'], risk: 'high', status: 'accepted' },
+          { id: 'SV-10', stride: ['tampering'], likelihood: 'high', impact: 'high', status: 'mitigated' },
+          { id: 'SV-11', stride: [] },
         ],
       },
       pki: {
@@ -104,7 +104,7 @@ describe('security overview', () => {
   it('ranks owners by items not closed, then by risk', () => {
     const owners = topOwners(rows, 10)
     expect(owners.map(o => [o.owner.label, o.counts.unresolved + o.counts.carried, o.highestRisk])).toEqual([
-      ['keyStore (gateway.keyStore)', 4, 'high'],
+      ['vault (gateway.vault)', 4, 'high'],
       ['pki', 1, 'critical'],
       ['gateway → pki: CMP', 1, 'medium'],
     ])
@@ -112,9 +112,9 @@ describe('security overview', () => {
   })
 
   it('picks the view of the scope element', () => {
-    const keyStore = model.element('gateway.keyStore')
+    const vault = model.element('gateway.vault')
     expect(pickRegisterView(model.element('gateway').views(), { scope: 'gateway' as never })?.id).toBe('gatewayView')
-    expect(pickRegisterView(keyStore.views(), { currentViewId: 'index' })?.id).toBe('gatewayView')
+    expect(pickRegisterView(vault.views(), { currentViewId: 'index' })?.id).toBe('gatewayView')
     expect(pickRegisterView(model.element('pki').views(), { currentViewId: 'index' })?.id).toBe('index')
     expect(pickRegisterView([])).toBeNull()
   })

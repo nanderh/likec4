@@ -18,7 +18,7 @@ Validation warns when the same threat or vulnerability id is defined on more tha
 
 _Color by_ has a _Risk score_ mode: the highest likelihood × impact (1 - 16) of the unresolved threats, with the risk matrix in the legend.
 
-Threats and vulnerabilities have an optional `source` property with one or more strings (`source 'Attestation', 'Questions'`), shown in element details and as a column of the threat register.
+Threats and vulnerabilities have an optional `source` property with one or more strings (`source 'Pentest 2026', 'Notes'`), shown in element details and as a column of the threat register.
 
 Accepted and transferred items count as _risk carried_, not as resolved: _Color by_ shows elements with only carried risk in their own color, and node badges show a second, muted marker for them.
 

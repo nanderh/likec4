@@ -16,8 +16,8 @@ describe('security validation', () => {
       ${spec}
       model {
         gateway = system {
-          keyStore = component {
-            threat KS-01 'Key extraction' { stride I }
+          vault = component {
+            threat SV-01 'Key extraction' { stride I }
           }
         }
         pki = system
@@ -29,8 +29,8 @@ describe('security validation', () => {
     await addDocument(`
       model {
         extend pki {
-          threat KS-01 'Copy-paste' { stride I }
-          vulnerability KS-01
+          threat SV-01 'Copy-paste' { stride I }
+          vulnerability SV-01
         }
         extend gateway -> pki 'CMP' {
           threat DF-02 { stride T }
@@ -45,8 +45,8 @@ describe('security validation', () => {
     expect(warnings.sort()).toEqual([
       `Threat id "DF-01" is also defined on gateway -> pki 'CMP'; ids should be unique in the project`,
       `Threat id "DF-01" is also defined on gateway; ids should be unique in the project`,
-      `Threat id "KS-01" is also defined on gateway.keyStore; ids should be unique in the project`,
-      `Threat id "KS-01" is also defined on pki; ids should be unique in the project`,
+      `Threat id "SV-01" is also defined on gateway.vault; ids should be unique in the project`,
+      `Threat id "SV-01" is also defined on pki; ids should be unique in the project`,
     ])
   })
 

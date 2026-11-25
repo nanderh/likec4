@@ -62,7 +62,7 @@ const parseStatus = enumOf<SecurityStatus>(SecurityStatuses, {
 
 const status: AttributeSpec = { type: 'enum', values: SecurityStatuses, parse: parseStatus }
 const riskLevel: AttributeSpec = { type: 'enum', values: RiskLevels, parse: parseRiskLevel }
-// where the item comes from, e.g. a document or note: source 'Fuse Programming', 'Questions'
+// where the item comes from, e.g. a document or note: source 'Design review', 'Workshop notes'
 const source: AttributeSpec = { type: 'text', multiple: true }
 
 export const vulnerabilityAttributes = {

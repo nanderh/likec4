@@ -20,7 +20,7 @@ describe('security roll-up', () => {
     .model(({ system, app, rel }, _) =>
       _(
         system('gateway').with(
-          app('keyStore'),
+          app('vault'),
           app('hal'),
         ),
         system('pki'),
@@ -29,9 +29,9 @@ describe('security roll-up', () => {
         rel('gateway', 'pki'),
         rel('meter', 'gateway'),
         // from a child to outside: neither direct nor inside
-        rel('gateway.keyStore', 'pki'),
+        rel('gateway.vault', 'pki'),
         // between children
-        rel('gateway.hal', 'gateway.keyStore'),
+        rel('gateway.hal', 'gateway.vault'),
       )
     )
     .build()
@@ -43,9 +43,9 @@ describe('security roll-up', () => {
     elements: {
       ...data.elements,
       gateway: { ...data.elements['gateway']!, threats: [threat('GW-01')] },
-      ['gateway.keyStore']: {
-        ...data.elements['gateway.keyStore']!,
-        threats: [threat('KS-01'), threat('KS-09', 'accepted')],
+      ['gateway.vault']: {
+        ...data.elements['gateway.vault']!,
+        threats: [threat('SV-01'), threat('SV-09', 'accepted')],
       },
       ['gateway.hal']: { ...data.elements['gateway.hal']!, vulnerabilities: [{ id: 'V-HAL' }] },
     },
@@ -67,22 +67,22 @@ describe('security roll-up', () => {
       relThreat('gateway', 'pki'),
       relThreat('meter', 'gateway'),
     ])
-    expect(scope.descendants.map(d => d.element.id)).toEqual(['gateway.hal', 'gateway.keyStore'])
-    expect(scope.internal.map(r => r.threats[0]!.id)).toEqual([relThreat('gateway.hal', 'gateway.keyStore')])
+    expect(scope.descendants.map(d => d.element.id)).toEqual(['gateway.hal', 'gateway.vault'])
+    expect(scope.internal.map(r => r.threats[0]!.id)).toEqual([relThreat('gateway.hal', 'gateway.vault')])
     expect(ids(inheritedSecurityItems(scope))).toEqual([
-      relThreat('gateway.hal', 'gateway.keyStore'),
-      'KS-01',
-      'KS-09',
+      relThreat('gateway.hal', 'gateway.vault'),
+      'SV-01',
+      'SV-09',
       'V-HAL',
     ])
   })
 
   it('rolls up items inside the element for a collapsed parent', () => {
     expect(ids(rolledUpSecurityItems(model.element('gateway')))).toEqual([
-      relThreat('gateway.hal', 'gateway.keyStore'),
+      relThreat('gateway.hal', 'gateway.vault'),
       'GW-01',
-      'KS-01',
-      'KS-09',
+      'SV-01',
+      'SV-09',
       'V-HAL',
     ])
   })
@@ -96,7 +96,7 @@ describe('security roll-up', () => {
   })
 
   it('a leaf element rolls up only its own items', () => {
-    expect(ids(rolledUpSecurityItems(model.element('gateway.keyStore')))).toEqual(['KS-01', 'KS-09'])
+    expect(ids(rolledUpSecurityItems(model.element('gateway.vault')))).toEqual(['SV-01', 'SV-09'])
     expect(ids(rolledUpSecurityItems(model.element('pki')))).toEqual([])
   })
 })

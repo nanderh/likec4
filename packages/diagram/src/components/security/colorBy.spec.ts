@@ -39,12 +39,12 @@ describe('securityLevel', () => {
   })
 
   it('unresolved items win over carried items', () => {
-    // like gateway.keyStore: KS-09 accepted, other threats open
+    // like gateway.vault: SV-09 accepted, other threats open
     expect(securityLevel({
       vulnerabilities: [],
       threats: [
-        { id: 'KS-09', stride: [], risk: 'critical', status: 'accepted' },
-        { id: 'KS-01', stride: [], risk: 'medium', status: 'open' },
+        { id: 'SV-09', stride: [], risk: 'critical', status: 'accepted' },
+        { id: 'SV-01', stride: [], risk: 'medium', status: 'open' },
       ],
     }, 'threats')).toBe('medium')
   })
