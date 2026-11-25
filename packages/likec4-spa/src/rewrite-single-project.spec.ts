@@ -27,6 +27,8 @@ describe('rewriteSingleProjectInput', () => {
     expect(rewriteSingleProjectInput(url('/export/index/'), opts)?.pathname).toBe(
       '/project/cloud/export/index/',
     )
+    expect(rewriteSingleProjectInput(url('/security/'), opts)?.pathname).toBe('/project/cloud/security/')
+    expect(rewriteSingleProjectInput(url('/securityx/'), opts)).toBeUndefined()
   })
 
   it('preserves search and hash on rewrite', ({ expect }) => {

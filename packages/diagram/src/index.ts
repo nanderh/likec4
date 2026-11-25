@@ -148,3 +148,12 @@ export {
 export { defineLikeC4Webcomponent } from './webcomponent/defineWebcomponent'
 
 export { ViewIcon } from './components/ViewIcon'
+
+export {
+  buildSecurityRegister,
+  countStatusGroups,
+  type RegisterRow,
+  type StatusGroupTally,
+} from './components/security'
+
+export { SecurityOverview, type SecurityOverviewProps } from './security-overview/SecurityOverview'

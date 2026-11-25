@@ -136,6 +136,24 @@ as a separate field.
 
 The window stays open while you navigate, and can be moved and resized.
 
+## Security overview
+
+The same register is also a full page: **Threats and vulnerabilities** in the toolbar of the project overview,
+or **Security** in the sidebar (`/security` in a single-project workspace, `/project/<id>/security` otherwise).
+It needs no view in the model and always shows the current model.
+
+Above the register, the page summarizes the items:
+
+- **Risk matrix**: threats that are not closed, by likelihood × impact.
+- **By risk**: threats and vulnerabilities that are not closed, by risk or severity.
+- **By STRIDE category**: threats per category, split into unresolved, risk carried and closed.
+- **Hotspots**: the elements and relationships with the most items that are not closed.
+
+Click a cell, bar or hotspot to filter the register to its items. Quick filters above the register select
+items by status group (_Not closed_, _Unresolved_, _Risk carried_, _Closed_).
+Click a row to expand the full threat or vulnerability (description, mitigation, source, links),
+and the button at the end of the row to open the element or relationship in a view.
+
 ## Color by risk
 
 When the model has vulnerabilities or threats, the navigation panel shows a **Color by** menu (palette icon).

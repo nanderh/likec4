@@ -15,6 +15,7 @@ import { Route as SingleIndexRouteImport } from './routes/single-index'
 import { Route as ProjectProjectIdRouteRouteImport } from './routes/project.$projectId/route'
 import { Route as WebcomponentSplatRouteImport } from './routes/webcomponent.$'
 import { Route as ProjectProjectIdIndexRouteImport } from './routes/project.$projectId/index'
+import { Route as ProjectProjectIdSecurityRouteImport } from './routes/project.$projectId/security'
 import { Route as ProjectProjectIdEmbedViewIdRouteImport } from './routes/project.$projectId/embed.$viewId'
 import { Route as ProjectProjectIdExportViewIdRouteImport } from './routes/project.$projectId/export.$viewId'
 import { Route as ProjectProjectIdViewViewIdRouteImport } from './routes/project.$projectId/view.$viewId'
@@ -54,6 +55,12 @@ const ProjectProjectIdIndexRoute = ProjectProjectIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProjectProjectIdRouteRoute,
 } as any)
+const ProjectProjectIdSecurityRoute =
+  ProjectProjectIdSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => ProjectProjectIdRouteRoute,
+  } as any)
 const ProjectProjectIdEmbedViewIdRoute =
   ProjectProjectIdEmbedViewIdRouteImport.update({
     id: '/embed/$viewId',
@@ -109,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/single-index': typeof SingleIndexRoute
   '/project/$projectId': typeof ProjectProjectIdRouteRouteWithChildren
   '/webcomponent/$': typeof WebcomponentSplatRoute
+  '/project/$projectId/security': typeof ProjectProjectIdSecurityRoute
   '/project/$projectId/': typeof ProjectProjectIdIndexRoute
   '/project/$projectId/embed/$viewId': typeof ProjectProjectIdEmbedViewIdRoute
   '/project/$projectId/export/$viewId': typeof ProjectProjectIdExportViewIdRoute
@@ -124,6 +132,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/single-index': typeof SingleIndexRoute
   '/webcomponent/$': typeof WebcomponentSplatRoute
+  '/project/$projectId/security': typeof ProjectProjectIdSecurityRoute
   '/project/$projectId': typeof ProjectProjectIdIndexRoute
   '/project/$projectId/embed/$viewId': typeof ProjectProjectIdEmbedViewIdRoute
   '/project/$projectId/export/$viewId': typeof ProjectProjectIdExportViewIdRoute
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/single-index': typeof SingleIndexRoute
   '/project/$projectId': typeof ProjectProjectIdRouteRouteWithChildren
   '/webcomponent/$': typeof WebcomponentSplatRoute
+  '/project/$projectId/security': typeof ProjectProjectIdSecurityRoute
   '/project/$projectId/': typeof ProjectProjectIdIndexRoute
   '/project/$projectId/embed/$viewId': typeof ProjectProjectIdEmbedViewIdRoute
   '/project/$projectId/export/$viewId': typeof ProjectProjectIdExportViewIdRoute
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/single-index'
     | '/project/$projectId'
     | '/webcomponent/$'
+    | '/project/$projectId/security'
     | '/project/$projectId/'
     | '/project/$projectId/embed/$viewId'
     | '/project/$projectId/export/$viewId'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/single-index'
     | '/webcomponent/$'
+    | '/project/$projectId/security'
     | '/project/$projectId'
     | '/project/$projectId/embed/$viewId'
     | '/project/$projectId/export/$viewId'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/single-index'
     | '/project/$projectId'
     | '/webcomponent/$'
+    | '/project/$projectId/security'
     | '/project/$projectId/'
     | '/project/$projectId/embed/$viewId'
     | '/project/$projectId/export/$viewId'
@@ -249,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/project/$projectId/'
       preLoaderRoute: typeof ProjectProjectIdIndexRouteImport
+      parentRoute: typeof ProjectProjectIdRouteRoute
+    }
+    '/project/$projectId/security': {
+      id: '/project/$projectId/security'
+      path: '/security'
+      fullPath: '/project/$projectId/security'
+      preLoaderRoute: typeof ProjectProjectIdSecurityRouteImport
       parentRoute: typeof ProjectProjectIdRouteRoute
     }
     '/project/$projectId/embed/$viewId': {
@@ -333,6 +353,7 @@ const ProjectProjectIdViewViewIdRouteWithChildren =
   )
 
 interface ProjectProjectIdRouteRouteChildren {
+  ProjectProjectIdSecurityRoute: typeof ProjectProjectIdSecurityRoute
   ProjectProjectIdIndexRoute: typeof ProjectProjectIdIndexRoute
   ProjectProjectIdEmbedViewIdRoute: typeof ProjectProjectIdEmbedViewIdRoute
   ProjectProjectIdExportViewIdRoute: typeof ProjectProjectIdExportViewIdRoute
@@ -340,6 +361,7 @@ interface ProjectProjectIdRouteRouteChildren {
 }
 
 const ProjectProjectIdRouteRouteChildren: ProjectProjectIdRouteRouteChildren = {
+  ProjectProjectIdSecurityRoute: ProjectProjectIdSecurityRoute,
   ProjectProjectIdIndexRoute: ProjectProjectIdIndexRoute,
   ProjectProjectIdEmbedViewIdRoute: ProjectProjectIdEmbedViewIdRoute,
   ProjectProjectIdExportViewIdRoute: ProjectProjectIdExportViewIdRoute,

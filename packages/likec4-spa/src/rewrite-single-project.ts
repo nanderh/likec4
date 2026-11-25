@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-const REWRITTEN_SEGMENTS = ['view', 'embed', 'export'] as const
+const REWRITTEN_SEGMENTS = ['view', 'embed', 'export', 'security'] as const
 
 export type SingleProjectRewriteOptions = {
   /**
@@ -26,7 +26,7 @@ function shouldRewriteInputPath(pathname: string): boolean {
 }
 
 /**
- * Maps public single-project URLs (`/view/...`, `/embed/...`, `/export/...`)
+ * Maps public single-project URLs (`/view/...`, `/embed/...`, `/export/...`, `/security`)
  * onto the canonical multi-project tree under `/project/<id>/...`.
  *
  * Leaves `/`, `/projects`, `/project/...`, `/single-index`, `/webcomponent` alone.

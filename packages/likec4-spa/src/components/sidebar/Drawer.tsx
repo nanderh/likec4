@@ -1,6 +1,7 @@
+import { useOptionalLikeC4Model } from '@likec4/diagram'
 import { Button, Drawer, Group, rem, ScrollArea, SegmentedControl } from '@mantine/core'
 import { useLocalStorage } from '@mantine/hooks'
-import { IconArrowLeft, IconStarFilled } from '@tabler/icons-react'
+import { IconArrowLeft, IconShieldHalfFilled, IconStarFilled } from '@tabler/icons-react'
 import { Link } from '@tanstack/react-router'
 import { isSingleProject } from 'likec4:projects'
 import { memo } from 'react'
@@ -11,6 +12,7 @@ import { SidebarDrawerOps, useDrawerOpened } from './state'
 export const SidebarDrawer = memo(() => {
   const opened = useDrawerOpened()
   const { id: projectId } = useCurrentProject()
+  const hasSecurity = useOptionalLikeC4Model()?.hasSecurity() ?? false
 
   const [grouping, setGrouping] = useLocalStorage({
     key: 'sidebar-drawer-grouping',
@@ -74,6 +76,28 @@ export const SidebarDrawer = memo(() => {
               )}>
               Open index
             </Button>
+            {hasSecurity && (
+              <Button
+                leftSection={<IconShieldHalfFilled size={12} stroke={2} />}
+                color="dimmed"
+                variant="subtle"
+                px={rem(5)}
+                styles={{
+                  section: {
+                    marginInlineEnd: 4,
+                  },
+                }}
+                size="xs"
+                renderRoot={(props) => (
+                  <Link
+                    to="/project/$projectId/security"
+                    params={{ projectId }}
+                    {...props}
+                  />
+                )}>
+                Security
+              </Button>
+            )}
           </Group>
           <Drawer.CloseButton />
         </Drawer.Header>

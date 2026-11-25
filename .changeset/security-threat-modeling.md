@@ -10,6 +10,8 @@ Elements and relationships can document known vulnerabilities (`vulnerability CV
 
 A _Threat register_ window in the navigation panel lists all threats and vulnerabilities of the project, with sorting and filtering on every column, navigation to the element or relationship in a view, and CSV export.
 
+A _Security overview_ page (linked from the project overview and the sidebar) shows the register as a full page, with a risk matrix, counts by risk and STRIDE category, and the elements and relationships with the most open items. Clicking any of them filters the register, and rows expand to the full threat or vulnerability.
+
 Node badges, _Color by_ and element details of a parent element include the threats and vulnerabilities of its children and of relationships between them, so a collapsed parent shows the risk inside it. Element details separate own items from items inherited from children. A scoped view that does not show its scope element (e.g. children in groups) shows the threats of that element and its relationships in a badge next to the view title.
 
 Validation warns when the same threat or vulnerability id is defined on more than one element or relationship, or again in an `extend` of the same element. The warning for a relationship `extend` that matches no relationship lists the nearest relationships.

@@ -33,15 +33,11 @@ export type RegisterOwner =
     readonly label: string
   }
 
-/**
- * Row of the threat register: a threat or a vulnerability with its owner
- */
-export interface RegisterRow {
+interface RegisterRowBase {
   /**
    * Unique key of the row (the same item id may be defined on several owners)
    */
   readonly key: string
-  readonly kind: SecurityItemKind
   readonly id: string
   readonly title: string
   readonly owner: RegisterOwner
@@ -62,6 +58,19 @@ export interface RegisterRow {
    */
   readonly source: readonly string[]
 }
+
+/**
+ * Row of the threat register: a threat or a vulnerability with its owner
+ */
+export type RegisterRow =
+  | RegisterRowBase & {
+    readonly kind: 'threat'
+    readonly item: Threat
+  }
+  | RegisterRowBase & {
+    readonly kind: 'vulnerability'
+    readonly item: Vulnerability
+  }
 
 export type RegisterColumn =
   | 'kind'
@@ -89,6 +98,7 @@ function threatRow(threat: Threat, owner: RegisterOwner, ownerKey: string): Regi
   return {
     key: `t:${ownerKey}:${threat.id}`,
     kind: 'threat',
+    item: threat,
     id: threat.id,
     title: threat.title ?? '',
     owner,
@@ -107,6 +117,7 @@ function vulnerabilityRow(vulnerability: Vulnerability, owner: RegisterOwner, ow
   return {
     key: `v:${ownerKey}:${vulnerability.id}`,
     kind: 'vulnerability',
+    item: vulnerability,
     id: vulnerability.id,
     title: vulnerability.title ?? '',
     owner,

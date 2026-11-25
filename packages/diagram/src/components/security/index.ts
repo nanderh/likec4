@@ -12,6 +12,24 @@ export {
   SecurityPalette,
 } from './colorBy'
 export {
+  countRisk,
+  countRiskMatrix,
+  countStatusGroups,
+  countStride,
+  NotClosedStatuses,
+  ownerFilters,
+  type OwnerSummary,
+  pickRegisterView,
+  type RiskBucket,
+  RiskBuckets,
+  type RiskMatrixCounts,
+  type RiskMatrixKey,
+  riskMatrixKey,
+  statusesOfGroups,
+  type StatusGroupTally,
+  topOwners,
+} from './overview'
+export {
   buildSecurityRegister,
   filterRegister,
   type RegisterColumn,
@@ -23,6 +41,13 @@ export {
   type SecurityItemKind,
   sortRegister,
 } from './register'
+export {
+  downloadRegisterCsv,
+  hasActiveRegisterFilters,
+  nextRegisterSort,
+  SecurityRegisterTable,
+  type SecurityRegisterTableProps,
+} from './RegisterTable'
 export {
   type ElementSecurityScope,
   elementSecurityScope,

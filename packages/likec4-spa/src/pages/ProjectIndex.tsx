@@ -1,7 +1,8 @@
 import { useLikeC4Model } from '@likec4/diagram'
-import { Burger } from '@mantine/core'
+import { Burger, Button } from '@mantine/core'
 import { useDocumentTitle } from '@mantine/hooks'
-import { IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList, IconShieldHalfFilled } from '@tabler/icons-react'
+import { Link } from '@tanstack/react-router'
 import { pageTitle } from 'likec4:app-config'
 import { useMemo, useState } from 'react'
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle'
@@ -87,6 +88,15 @@ export function ProjectIndexPage({ mode, onModeChange }: {
           <Toolbar role="toolbar" aria-label="Views">
             <WorkspaceSearchTrigger label="Search elements and views" />
             <SortMenu options={SORT_OPTIONS} value={sort} onChange={setSort} label="Sort views by" />
+            {model.hasSecurity() && (
+              <Button
+                size="xs"
+                variant="default"
+                leftSection={<IconShieldHalfFilled size={14} />}
+                renderRoot={props => <Link to="/project/$projectId/security" params={{ projectId }} {...props} />}>
+                Threats and vulnerabilities
+              </Button>
+            )}
             <ToolbarSpacer />
             <ViewModeSwitch modes={MODES} value={mode} onChange={onModeChange} />
             <ColorSchemeToggle />
